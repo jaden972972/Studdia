@@ -28,7 +28,8 @@ export default function Home() {
     } else if (segundos === 0) {
       setActivo(false);
       document.title = "¡TIEMPO CUMPLIDO!";
-      alert("¡Sesión terminada! Tómate un respiro.");
+      // Usamos un pequeño delay para el alert para que no bloquee el renderizado del 00:00
+      setTimeout(() => alert("¡Sesión terminada! Tómate un respiro."), 100);
     } else {
       document.title = "Focusify .";
     }
@@ -81,11 +82,13 @@ export default function Home() {
           <h2 className="text-6xl font-mono font-black tracking-tighter mb-4 text-white tabular-nums">
             {formatearTiempo(segundos)}
           </h2>
+          
+          {/* --- CAMBIO DE TEXTO AQUÍ --- */}
           <button 
             onClick={() => setActivo(!activo)}
-            className={`w-full py-3 rounded-2xl font-black text-xs transition-all active:scale-95 ${activo ? "bg-white/10 text-white border border-white/20" : "bg-white text-black shadow-lg"}`}
+            className={`w-full py-3 rounded-2xl font-black text-xs transition-all active:scale-95 uppercase tracking-wider ${activo ? "bg-white/10 text-white border border-white/20" : "bg-white text-black shadow-lg"}`}
           >
-            {activo ? "PAUSAR" : "INICIAR SESIÓN"}
+            {activo ? "PAUSAR ESTUDIO" : "EMPEZAR A ESTUDIAR"}
           </button>
         </div>
 
@@ -110,7 +113,7 @@ export default function Home() {
             type="text" 
             placeholder="URL de YouTube..." 
             value={input} 
-            className="bg-white/5 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-red-600/50 transition-all"
+            className="bg-white/5 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-red-600/50 transition-all text-white placeholder:text-gray-700 font-mono"
             onChange={(e) => setInput(e.target.value)} 
           />
           <div className="flex gap-2">
@@ -118,7 +121,7 @@ export default function Home() {
               type="text" 
               placeholder="Nombre..." 
               value={nombreInput} 
-              className="bg-white/5 px-5 py-3 rounded-xl text-sm outline-none flex-1 focus:ring-1 focus:ring-green-600/50 transition-all"
+              className="bg-white/5 px-5 py-3 rounded-xl text-sm outline-none flex-1 focus:ring-1 focus:ring-green-600/50 transition-all text-white placeholder:text-gray-700"
               onChange={(e) => setNombreInput(e.target.value)} 
             />
             <button 
@@ -136,12 +139,12 @@ export default function Home() {
 
         {/* 5. BIBLIOTECA RESPONSIVE */}
         <div className="w-full px-2">
-          <p className="text-center text-[10px] font-bold text-gray-600 uppercase tracking-[0.5em] mb-6">Tu Estación de Control</p>
+          <p className="text-center text-[10px] font-bold text-gray-600 uppercase tracking-[0.5em] mb-6 select-none">Tu Estación de Control</p>
           <div className="flex flex-wrap justify-center gap-3">
             {favoritos.map((f, i) => (
               <button 
                 key={i} 
-                onClick={() => cargarVideo(f.id)} 
+                onClick={() => { cargarVideo(f.id); setActivo(false); setSegundos(25*60); setModo("TRABAJO"); }} 
                 className="text-[10px] bg-white/[0.03] px-4 py-2 rounded-xl border border-white/5 hover:border-red-600/50 hover:bg-red-600/5 transition-all uppercase font-bold tracking-wider"
               >
                 {f.nombre}
