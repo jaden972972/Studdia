@@ -88,6 +88,10 @@ export default function Home() {
   const loopRef = useRef(false);
   const activeTracksRef = useRef<Track[]>([]);
   const trackIdxRef = useRef(-1);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const initializedRef = useRef(false);
+  const sessionRef = useRef(session);
+  useEffect(() => { sessionRef.current = session; }, [session]);
 
   // Derive active tracks from current active playlist
   const activeTracks = playlists.find(p => p.id === activePlaylistId)?.tracks ?? [];
@@ -227,25 +231,71 @@ export default function Home() {
   const formatTime = (s: number) =>
     `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
 
+  // Load playlists: Supabase if logged in, localStorage otherwise
   useEffect(() => {
-    const saved = localStorage.getItem("focusify_playlists_v1");
-    if (saved) {
-      const parsed: Playlist[] = JSON.parse(saved);
-      const existingIds = new Set(parsed.map((p: Playlist) => p.id));
-      const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
-      // Also backfill default tracks for saved playlists that were saved empty
-      const merged = parsed.map((p: Playlist) => {
-        const def = DEFAULT_PLAYLISTS.find(d => d.id === p.id);
-        return p.tracks.length === 0 && def && def.tracks.length > 0
-          ? { ...p, tracks: def.tracks }
-          : p;
-      });
-      setPlaylists([...merged, ...missing]);
-    }
-  }, []);
+    if (session === undefined) return;
+    initializedRef.current = false;
 
+    const load = async () => {
+      let loaded = false;
+
+      if (session?.user) {
+        try {
+          const res = await fetch("/api/playlists");
+          const data = await res.json();
+          if (data.playlists) {
+            const saved: Playlist[] = data.playlists;
+            const existingIds = new Set(saved.map((p: Playlist) => p.id));
+            const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
+            const merged = saved.map((p: Playlist) => {
+              const def = DEFAULT_PLAYLISTS.find(d => d.id === p.id);
+              return p.tracks.length === 0 && def && def.tracks.length > 0 ? { ...p, tracks: def.tracks } : p;
+            });
+            setPlaylists([...merged, ...missing]);
+            loaded = true;
+          }
+        } catch (e) {
+          console.error("Error loading playlists from Supabase:", e);
+        }
+      }
+
+      if (!loaded) {
+        const local = localStorage.getItem("focusify_playlists_v1");
+        if (local) {
+          const parsed: Playlist[] = JSON.parse(local);
+          const existingIds = new Set(parsed.map((p: Playlist) => p.id));
+          const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
+          const merged = parsed.map((p: Playlist) => {
+            const def = DEFAULT_PLAYLISTS.find(d => d.id === p.id);
+            return p.tracks.length === 0 && def && def.tracks.length > 0 ? { ...p, tracks: def.tracks } : p;
+          });
+          setPlaylists([...merged, ...missing]);
+        }
+      }
+
+      setTimeout(() => { initializedRef.current = true; }, 0);
+    };
+
+    load();
+  }, [session]);
+
+  // Save playlists: always localStorage + Supabase (debounced) when logged in
   useEffect(() => {
+    if (!initializedRef.current) return;
     localStorage.setItem("focusify_playlists_v1", JSON.stringify(playlists));
+    if (sessionRef.current?.user) {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        fetch("/api/playlists", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ playlists }),
+        }).catch(e => console.error("Error saving playlists:", e));
+      }, 1500);
+    }
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
   }, [playlists]);
 
   const searchYoutube = async (query: string) => {
