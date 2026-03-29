@@ -14,13 +14,46 @@ type Track = { id: string; title: string };
 type Playlist = { id: string; name: string; tracks: Track[] };
 
 const SUBJECT_PLAYLISTS: Playlist[] = [
-  { id: "subj-english", name: "English", tracks: [] },
-  { id: "subj-maths", name: "Maths", tracks: [] },
-  { id: "subj-geo-history", name: "Geography & History", tracks: [] },
-  { id: "subj-spanish", name: "Spanish", tracks: [] },
-  { id: "subj-biology", name: "Biology & Geology", tracks: [] },
-  { id: "subj-physics", name: "Physics & Chemistry", tracks: [] },
-  { id: "subj-tech", name: "Technology & Digitalization", tracks: [] },
+  { id: "subj-music", name: "Music", tracks: [
+    { id: "jfKfPfyJRdk", title: "Lofi Hip Hop Radio – Beats to Relax/Study" },
+    { id: "5qap5aO4i9A", title: "Lofi Hip Hop Radio – Chilled Beats" },
+    { id: "4xDzrJKXOOY", title: "Synthwave Radio – Beats to Study/Work" },
+  ]},
+  { id: "subj-english", name: "English", tracks: [
+    { id: "vx6LMHpBbSk", title: "English for Beginners – Basic Vocabulary" },
+    { id: "ixS4hHe3_Oc", title: "Learn English Grammar: Present Simple" },
+    { id: "PpNOiHKhFxQ", title: "English Tenses Explained – Full Lesson" },
+  ]},
+  { id: "subj-maths", name: "Maths", tracks: [
+    { id: "tMSGMSiSd_8", title: "Introduction to Division – Math Antics" },
+    { id: "bQ5mMOVQKMU", title: "Long Division – Step by Step" },
+    { id: "AS2hkFBNp54", title: "Fractions and Decimals – Basic Maths" },
+  ]},
+  { id: "subj-geo-history", name: "Geography & History", tracks: [
+    { id: "Xs_obJ-KIqM", title: "The Agricultural Revolution – CrashCourse" },
+    { id: "xuPYhZO0G0s", title: "Geography Basics: Maps & Coordinates" },
+    { id: "4OHbY3iVCDE", title: "Ancient Civilizations – World History" },
+  ]},
+  { id: "subj-spanish", name: "Spanish", tracks: [
+    { id: "YQnN7N3GLRY", title: "El Lazarillo de Tormes – Resumen" },
+    { id: "TmVY-M_lKi0", title: "Oraciones subordinadas – Gramática" },
+    { id: "M-xrAHD77hI", title: "Comentario de texto – Lengua Castellana" },
+  ]},
+  { id: "subj-biology", name: "Biology & Geology", tracks: [
+    { id: "QnQe0xW_JY4", title: "Evolution & Natural Selection – CrashCourse" },
+    { id: "O_y7vPnMaCI", title: "La Célula y sus Partes – Biología" },
+    { id: "pHMi5dXZeVc", title: "Rocas y Minerales – Geología básica" },
+  ]},
+  { id: "subj-physics", name: "Physics & Chemistry", tracks: [
+    { id: "kKKM8Y-u7ds", title: "Newton's Laws of Motion – Physics" },
+    { id: "Ba1TaKp4NLs", title: "The Periodic Table Explained" },
+    { id: "FSyAehMdpyY", title: "Introduction to Chemistry – CrashCourse" },
+  ]},
+  { id: "subj-tech", name: "Technology & Digitalization", tracks: [
+    { id: "AkYDsiRVqno", title: "How Does the Internet Work?" },
+    { id: "N_ZgowCzFnE", title: "Introduction to Programming – CS Basics" },
+    { id: "OAx_6-wdslM", title: "What is Artificial Intelligence?" },
+  ]},
 ];
 const DEFAULT_PLAYLISTS: Playlist[] = [...SUBJECT_PLAYLISTS];
 
@@ -36,9 +69,9 @@ export default function Home() {
 
   // ── Playlist state ──
   const [playlists, setPlaylists] = useState<Playlist[]>(DEFAULT_PLAYLISTS);
-  const [activePlaylistId, setActivePlaylistId] = useState<string>("subj-english");
+  const [activePlaylistId, setActivePlaylistId] = useState<string>("subj-music");
   const [currentTrackIdx, setCurrentTrackIdx] = useState(-1);
-  const [expandedId, setExpandedId] = useState<string | null>("subj-english");
+  const [expandedId, setExpandedId] = useState<string | null>("subj-music");
   const [showNewPlaylist, setShowNewPlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [saveMenuFor, setSaveMenuFor] = useState<string | null>(null);
@@ -195,7 +228,14 @@ export default function Home() {
       const parsed: Playlist[] = JSON.parse(saved);
       const existingIds = new Set(parsed.map((p: Playlist) => p.id));
       const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
-      setPlaylists(missing.length > 0 ? [...parsed, ...missing] : parsed);
+      // Also backfill default tracks for saved playlists that were saved empty
+      const merged = parsed.map((p: Playlist) => {
+        const def = DEFAULT_PLAYLISTS.find(d => d.id === p.id);
+        return p.tracks.length === 0 && def && def.tracks.length > 0
+          ? { ...p, tracks: def.tracks }
+          : p;
+      });
+      setPlaylists([...merged, ...missing]);
     }
   }, []);
 
