@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 const MODES = {
   FOCUS: { label: "Focus", minutes: 25, color: "#8b5cf6" },
@@ -15,6 +16,7 @@ type Playlist = { id: string; name: string; tracks: Track[] };
 const DEFAULT_PLAYLIST: Playlist = { id: "default", name: "My Library", tracks: [] };
 
 export default function Home() {
+  const { data: session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
 
@@ -356,16 +358,36 @@ export default function Home() {
         </div>
 
         {/* Footer links */}
-        <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
-          <button onClick={() => { setShowAbout(true); setSidebarOpen(false); }}
-            className="flex items-center gap-2 text-[11px] text-gray-600 hover:text-gray-300 transition-colors">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
-            About v9
-          </button>
-          <Link href="/" className="flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-300 transition-colors">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
-            Home
-          </Link>
+        <div className="flex flex-col gap-2 pt-4 border-t border-white/[0.06]">
+          {/* User info + sign out */}
+          {session?.user && (
+            <div className="flex items-center gap-2 mb-1">
+              {session.user.image && (
+                <img src={session.user.image} alt="" className="w-6 h-6 rounded-full shrink-0" />
+              )}
+              <span className="text-[10px] text-gray-500 truncate flex-1">{session.user.name}</span>
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                title="Sign out"
+                className="text-gray-700 hover:text-red-400 transition-colors shrink-0"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/>
+                </svg>
+              </button>
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <button onClick={() => { setShowAbout(true); setSidebarOpen(false); }}
+              className="flex items-center gap-2 text-[11px] text-gray-600 hover:text-gray-300 transition-colors">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
+              About v9
+            </button>
+            <Link href="/" className="flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-300 transition-colors">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+              Home
+            </Link>
+          </div>
         </div>
       </aside>
 
@@ -398,11 +420,21 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right side — session pill */}
-          <div className="flex items-center gap-2 text-[11px] text-gray-500">
-            <div className="w-1.5 h-1.5 rounded-full transition-colors duration-300" style={{ background: isActive ? accent : "#333" }} />
-            <span className="hidden sm:inline">{isActive ? "In session" : "Ready"}</span>
-            <span className="font-bold text-white ml-1">{sessions} <span className="font-normal text-gray-600">sessions</span></span>
+          {/* Right side — session pill + user avatar */}
+          <div className="flex items-center gap-3 text-[11px] text-gray-500">
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="w-1.5 h-1.5 rounded-full transition-colors duration-300" style={{ background: isActive ? accent : "#333" }} />
+              <span>{isActive ? "In session" : "Ready"}</span>
+              <span className="font-bold text-white ml-1">{sessions} <span className="font-normal text-gray-600">sessions</span></span>
+            </div>
+            {session?.user?.image && (
+              <img
+                src={session.user.image}
+                alt={session.user.name ?? "User"}
+                title={session.user.name ?? ""}
+                className="w-7 h-7 rounded-full border border-white/10 shrink-0"
+              />
+            )}
           </div>
         </header>
 
