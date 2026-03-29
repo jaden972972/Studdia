@@ -13,9 +13,17 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Focusify",
-  description: "A minimalist cockpit for deep work. Pomodoro + ambient music.",
-};
+  title: 'Focusify | Discipline & Study Cockpit',
+  description: 'The ultimate minimalist tool for deep work, Pomodoro sessions, and curated focus music. Built for discipline.',
+  keywords: ['Focusify', 'Deep Work', 'Pomodoro', 'Study Music', 'Discipline'],
+  authors: [{ name: 'Jaden Sy' }],
+  robots: 'index, follow', // Esto le dice a Google: "Entra y regístrame"
+  openGraph: {
+    title: 'Focusify',
+    description: 'Forge your mind with the best study tool.',
+    type: 'website',
+  },
+}
 
 export default function RootLayout({
   children,
