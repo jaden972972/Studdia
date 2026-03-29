@@ -22,10 +22,7 @@ const SUBJECT_PLAYLISTS: Playlist[] = [
   { id: "subj-physics", name: "Physics & Chemistry", tracks: [] },
   { id: "subj-tech", name: "Technology & Digitalization", tracks: [] },
 ];
-const DEFAULT_PLAYLISTS: Playlist[] = [
-  { id: "default", name: "My Library", tracks: [] },
-  ...SUBJECT_PLAYLISTS,
-];
+const DEFAULT_PLAYLISTS: Playlist[] = [...SUBJECT_PLAYLISTS];
 
 export default function Home() {
   const { data: session } = useSession();
@@ -39,9 +36,9 @@ export default function Home() {
 
   // ── Playlist state ──
   const [playlists, setPlaylists] = useState<Playlist[]>(DEFAULT_PLAYLISTS);
-  const [activePlaylistId, setActivePlaylistId] = useState<string>("default");
+  const [activePlaylistId, setActivePlaylistId] = useState<string>("subj-english");
   const [currentTrackIdx, setCurrentTrackIdx] = useState(-1);
-  const [expandedId, setExpandedId] = useState<string | null>("default");
+  const [expandedId, setExpandedId] = useState<string | null>("subj-english");
   const [showNewPlaylist, setShowNewPlaylist] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [saveMenuFor, setSaveMenuFor] = useState<string | null>(null);
@@ -135,12 +132,14 @@ export default function Home() {
   };
 
   const deletePlaylist = (id: string) => {
-    if (id === "default") return;
-    setPlaylists(prev => prev.filter(p => p.id !== id));
-    if (activePlaylistId === id) {
-      setActivePlaylistId("default");
-      setCurrentTrackIdx(-1);
-    }
+    setPlaylists(prev => {
+      const next = prev.filter(p => p.id !== id);
+      if (activePlaylistId === id && next.length > 0) {
+        setActivePlaylistId(next[0].id);
+        setCurrentTrackIdx(-1);
+      }
+      return next;
+    });
   };
 
   const addToPlaylist = (playlistId: string, track: Track) => {
@@ -322,16 +321,14 @@ export default function Home() {
                       style={{ color: isActive ? accent : "#555", transform: isExpanded ? "rotate(90deg)" : "rotate(0deg)", transition: "transform 0.2s" }}>
                       <path d="M9 18l6-6-6-6"/>
                     </svg>
-                    <span className="flex-1 text-xs font-semibold truncate" style={{ color: isActive ? "white" : "#999" }}>
+                    <span className="flex-1 text-sm font-bold truncate" style={{ color: "white" }}>
                       {pl.name}
                     </span>
                     <span className="text-[9px] text-gray-600">{pl.tracks.length}</span>
-                    {pl.id !== "default" && (
-                      <button onClick={e => { e.stopPropagation(); deletePlaylist(pl.id); }}
+                    <button onClick={e => { e.stopPropagation(); deletePlaylist(pl.id); }}
                         className="opacity-0 group-hover:opacity-100 text-gray-700 hover:text-red-400 transition-all shrink-0">
                         <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
                       </button>
-                    )}
                   </div>
 
                   {/* Tracks list */}
