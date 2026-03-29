@@ -1,493 +1,136 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
-const MODES = {
-  FOCUS: { label: "Focus", minutes: 25, color: "#8b5cf6" },
-  SHORT: { label: "Break", minutes: 5, color: "#10b981" },
-  LONG:  { label: "Long Break", minutes: 15, color: "#3b82f6" },
-} as const;
+const WORDS = ["Focus.", "Study.", "Win."];
 
-type Mode = keyof typeof MODES;
+export default function Landing() {
+  const router = useRouter();
+  const [wordIdx, setWordIdx] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-export default function Home() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showAbout, setShowAbout] = useState(false);
-
-  const [videoId, setVideoId] = useState("ZbQh1ZPG5pc");
-  const [input, setInput] = useState("");
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [favorites, setFavorites] = useState<{ id: string; title: string }[]>([]);
-  const [loopLibrary, setLoopLibrary] = useState(false);
-  const [currentFavIndex, setCurrentFavIndex] = useState(-1);
-
-  const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
-
-  // Refs for stable access inside YT event callbacks
-  const playerRef = useRef<any>(null);
-  const loopRef = useRef(false);
-  const favsRef = useRef<{ id: string; title: string }[]>([]);
-  const favIdxRef = useRef(-1);
-
-  useEffect(() => { loopRef.current = loopLibrary; }, [loopLibrary]);
-  useEffect(() => { favsRef.current = favorites; }, [favorites]);
-  useEffect(() => { favIdxRef.current = currentFavIndex; }, [currentFavIndex]);
-
-  const [mode, setMode] = useState<Mode>("FOCUS");
-  const [seconds, setSeconds] = useState(MODES.FOCUS.minutes * 60);
-  const [isActive, setIsActive] = useState(false);
-  const [sessions, setSessions] = useState(0);
-
-  const totalSeconds = MODES[mode].minutes * 60;
-  const progress = 1 - seconds / totalSeconds;
-  const radius = 80;
-  const circumference = 2 * Math.PI * radius;
-  const accent = MODES[mode].color;
-
-  // ── YT IFrame API ──
-  const initPlayer = () => {
-    if (!document.getElementById("yt-player")) return;
-    playerRef.current = new (window as any).YT.Player("yt-player", {
-      videoId,
-      playerVars: { autoplay: 1, modestbranding: 1, rel: 0 },
-      events: {
-        onStateChange: (e: any) => {
-          // 0 = ended
-          if (e.data === 0 && loopRef.current) {
-            const favs = favsRef.current;
-            if (favs.length === 0) return;
-            const nextIdx = (favIdxRef.current + 1) % favs.length;
-            favIdxRef.current = nextIdx;
-            setCurrentFavIndex(nextIdx);
-            setVideoId(favs[nextIdx].id);
-          }
-        },
-      },
-    });
-  };
-
+  // Cycling headline words
   useEffect(() => {
-    if ((window as any).YT?.Player) {
-      initPlayer();
-    } else {
-      if (!document.querySelector('script[src="https://www.youtube.com/iframe_api"]')) {
-        const tag = document.createElement("script");
-        tag.src = "https://www.youtube.com/iframe_api";
-        document.head.appendChild(tag);
-      }
-      (window as any).onYouTubeIframeAPIReady = initPlayer;
-    }
-    return () => { playerRef.current?.destroy?.(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Load new video in existing player instead of remounting iframe
-  useEffect(() => {
-    if (playerRef.current?.loadVideoById) {
-      playerRef.current.loadVideoById(videoId);
-    }
-  }, [videoId]);
-
-  const playRandom = () => {
-    if (favorites.length === 0) return;
-    const idx = Math.floor(Math.random() * favorites.length);
-    setCurrentFavIndex(idx);
-    setVideoId(favorites[idx].id);
-    setSidebarOpen(false);
-  };
-
-  const changeMode = (newMode: Mode) => {
-    setMode(newMode);
-    setSeconds(MODES[newMode].minutes * 60);
-    setIsActive(false);
-  };
-
-  useEffect(() => {
-    let interval: ReturnType<typeof setInterval>;
-    if (isActive && seconds > 0) {
-      interval = setInterval(() => setSeconds((s) => s - 1), 1000);
-      document.title = `(${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, "0")}) Focusify`;
-    } else if (seconds === 0) {
-      setIsActive(false);
-      if (mode === "FOCUS") setSessions((s) => s + 1);
-      document.title = "Focusify";
-    }
+    const interval = setInterval(() => {
+      setVisible(false);
+      setTimeout(() => {
+        setWordIdx(i => (i + 1) % WORDS.length);
+        setVisible(true);
+      }, 400);
+    }, 2000);
     return () => clearInterval(interval);
-  }, [isActive, seconds, mode]);
-
-  const formatTime = (s: number) =>
-    `${Math.floor(s / 60)}:${(s % 60).toString().padStart(2, "0")}`;
-
-  useEffect(() => {
-    const saved = localStorage.getItem("focusify_final_v8");
-    if (saved) setFavorites(JSON.parse(saved));
   }, []);
 
+  // Particle canvas background
   useEffect(() => {
-    localStorage.setItem("focusify_final_v8", JSON.stringify(favorites));
-  }, [favorites]);
-
-  const saveToLibrary = (id: string, title: string) => {
-    if (!favorites.find((f) => f.id === id))
-      setFavorites([...favorites, { id, title }]);
-  };
-
-  const searchYoutube = async (query: string) => {
-    if (!query || !API_KEY) return;
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${encodeURIComponent(query)}&type=video&key=${API_KEY}`
-      );
-      const data = await res.json();
-      setResults(data.items || []);
-    } catch (e) {
-      console.error("Search Error:", e);
-    }
-    setLoading(false);
-  };
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    let animId: number;
+    const resize = () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; };
+    resize();
+    window.addEventListener("resize", resize);
+    const particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * window.innerWidth,
+      y: Math.random() * window.innerHeight,
+      r: Math.random() * 1.5 + 0.3,
+      vx: (Math.random() - 0.5) * 0.3,
+      vy: (Math.random() - 0.5) * 0.3,
+      alpha: Math.random() * 0.4 + 0.1,
+    }));
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (const p of particles) {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(139,92,246,${p.alpha})`;
+        ctx.fill();
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0) p.x = canvas.width;
+        if (p.x > canvas.width) p.x = 0;
+        if (p.y < 0) p.y = canvas.height;
+        if (p.y > canvas.height) p.y = 0;
+      }
+      animId = requestAnimationFrame(draw);
+    };
+    draw();
+    return () => { cancelAnimationFrame(animId); window.removeEventListener("resize", resize); };
+  }, []);
 
   return (
-    <main className="h-screen w-screen bg-[#080808] text-white overflow-hidden flex font-sans">
+    <main className="relative h-screen w-screen bg-[#060608] text-white overflow-hidden flex flex-col items-center justify-center font-sans">
+      <canvas ref={canvasRef} className="absolute inset-0 pointer-events-none" />
 
-      {/* ── SIDEBAR OVERLAY (mobile) ── */}
-      {sidebarOpen && (
-        <div onClick={() => setSidebarOpen(false)} className="fixed inset-0 bg-black/70 backdrop-blur-sm z-40 md:hidden" />
-      )}
+      {/* Glow blob */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.08) 0%, transparent 70%)" }} />
 
-      {/* ── SIDEBAR ── */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 flex flex-col border-r border-white/[0.06] bg-[#0c0c0e] p-6 gap-5
-        transition-transform duration-300 ease-in-out
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        md:relative md:translate-x-0 md:flex shrink-0`}>
+      {/* Content */}
+      <div className="relative z-10 flex flex-col items-center text-center px-6 max-w-2xl">
+
+        {/* Logo */}
+        <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-8 shadow-2xl"
+          style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)" }}>
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="white" stroke="white" strokeWidth="0.5" strokeLinejoin="round"/>
+          </svg>
+        </div>
 
         {/* Brand */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            {/* Logo: eye + lightning bolt */}
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-500" style={{ background: accent }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="white" stroke="white" strokeWidth="0.5" strokeLinejoin="round"/>
-              </svg>
-            </div>
-            <div className="flex flex-col">
-              <span className="font-black text-sm tracking-tight leading-none">Focusify</span>
-              <span className="text-[9px] text-gray-500 tracking-wide leading-none mt-0.5">No ads &nbsp;·&nbsp; Study In Peace.</span>
-            </div>
-          </div>
-          <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-white/[0.05] transition-colors md:hidden">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
-          </button>
+        <div className="flex items-center gap-3 mb-3">
+          <h1 className="text-5xl md:text-6xl font-black tracking-tight">Focusify</h1>
+          <span className="text-xs font-bold px-2 py-1 rounded-lg bg-violet-500/20 text-violet-400 border border-violet-500/30 tracking-widest uppercase">v9</span>
         </div>
 
-        {/* Session counter */}
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4">
-          <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-2">Today</p>
-          <div className="flex items-end gap-1.5 mb-3">
-            <span className="text-3xl font-black tabular-nums">{sessions}</span>
-            <span className="text-gray-500 text-sm mb-1">sessions</span>
-          </div>
-          <div className="flex gap-1">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-1 flex-1 rounded-full transition-all duration-500"
-                style={{ background: i < sessions % 8 ? accent : "#1f1f23" }} />
-            ))}
-          </div>
+        {/* Cycling word */}
+        <div className="h-10 flex items-center mb-6">
+          <span className="text-3xl md:text-4xl font-black tracking-tight transition-all duration-300"
+            style={{
+              color: "#8b5cf6",
+              opacity: visible ? 1 : 0,
+              transform: visible ? "translateY(0)" : "translateY(8px)",
+            }}>
+            {WORDS[wordIdx]}
+          </span>
         </div>
 
-        {/* Library */}
-        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
-          {/* Library header with controls */}
-          <div className="flex items-center justify-between mb-3 shrink-0">
-            <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Library</p>
-            <div className="flex items-center gap-1">
-              {/* Shuffle button */}
-              <button onClick={playRandom} title="Play random"
-                className="p-1.5 rounded-lg transition-colors text-gray-600 hover:text-white hover:bg-white/[0.05] disabled:opacity-30"
-                disabled={favorites.length === 0}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
-                </svg>
-              </button>
-              {/* Loop toggle */}
-              <button onClick={() => setLoopLibrary((v) => !v)} title="Loop library"
-                className="p-1.5 rounded-lg transition-all"
-                style={loopLibrary
-                  ? { background: `${accent}22`, color: accent }
-                  : { color: "#444" }}
-              >
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
-                  <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-y-auto space-y-1 pr-0.5">
-            {favorites.length === 0 ? (
-              <p className="text-[11px] text-gray-700 italic text-center py-8">No saved tracks yet.</p>
-            ) : (
-              favorites.map((f, i) => {
-                const isPlaying = i === currentFavIndex;
-                return (
-                  <div key={i} className="group flex items-center gap-2 p-2.5 rounded-xl border transition-all"
-                    style={isPlaying
-                      ? { background: `${accent}12`, borderColor: `${accent}40` }
-                      : { borderColor: "transparent" }}
-                  >
-                    <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 transition-colors"
-                      style={{ background: isPlaying ? `${accent}30` : "rgba(255,255,255,0.06)" }}>
-                      {isPlaying ? (
-                        /* animated equalizer bars */
-                        <div className="flex items-end gap-[2px] h-3">
-                          {[1,2,3].map((b) => (
-                            <div key={b} className="w-[2px] rounded-full animate-bounce"
-                              style={{ height: `${6 + b * 2}px`, background: accent, animationDelay: `${b * 0.15}s` }} />
-                          ))}
-                        </div>
-                      ) : (
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" className="text-gray-400">
-                          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
-                        </svg>
-                      )}
-                    </div>
-                    <button onClick={() => { setVideoId(f.id); setCurrentFavIndex(i); setSidebarOpen(false); }}
-                      className="flex-1 text-left text-[11px] truncate transition-colors font-medium"
-                      style={{ color: isPlaying ? "white" : undefined }}>
-                      {f.title}
-                    </button>
-                    <button onClick={() => {
-                        setFavorites(favorites.filter((fav) => fav.id !== f.id));
-                        if (isPlaying) setCurrentFavIndex(-1);
-                      }}
-                      className="text-gray-700 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all shrink-0">
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12" /></svg>
-                    </button>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
+        <p className="text-gray-500 text-base md:text-lg leading-relaxed mb-10 max-w-md">
+          A minimalist cockpit for deep work.<br />
+          Pomodoro timer, custom playlists, zero ads.
+        </p>
 
-        {/* About link */}
-        <button onClick={() => { setShowAbout(true); setSidebarOpen(false); }}
-          className="flex items-center gap-2 text-[11px] text-gray-600 hover:text-gray-300 transition-colors pt-4 border-t border-white/[0.06]">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
-          About Focusify v8
+        {/* CTA */}
+        <button onClick={() => router.push("/cockpit")}
+          className="group relative px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all duration-300 active:scale-95"
+          style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 0 40px rgba(139,92,246,0.3)" }}>
+          <span className="relative z-10">Start Focusing</span>
+          <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            style={{ background: "linear-gradient(135deg, #9d6ff7, #7c3aed)" }} />
         </button>
-      </aside>
 
-      {/* ── MAIN AREA ── */}
-      <div className="flex-1 overflow-y-auto flex flex-col min-w-0">
-
-        {/* ── TOPBAR ── */}
-        <header className="shrink-0 flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05]">
-          {/* Mobile hamburger */}
-          <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] transition-colors md:hidden">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
-          </button>
-
-          {/* Brand — always visible */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors duration-500" style={{ background: accent }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="white" stroke="white" strokeWidth="0.5" strokeLinejoin="round"/>
+        {/* Features */}
+        <div className="mt-14 flex flex-wrap gap-4 justify-center">
+          {[
+            { icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z", label: "No ads. Ever." },
+            { icon: "M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z", label: "Custom Playlists" },
+            { icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z", label: "YouTube Music" },
+            { icon: "M22 12h-4l-3 9L9 3l-3 9H2", label: "Pomodoro Timer" },
+          ].map(f => (
+            <div key={f.label} className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] text-gray-500 text-[11px] font-semibold tracking-wide">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-violet-500" style={{ color: "#8b5cf6" }}>
+                <path d={f.icon}/>
               </svg>
+              {f.label}
             </div>
-            <div className="flex flex-col">
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-black tracking-tight leading-none">Focusify</span>
-                <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md transition-colors duration-500 hidden sm:inline leading-none"
-                  style={{ background: `${accent}22`, color: accent }}>
-                  {MODES[mode].label}
-                </span>
-              </div>
-              <span className="text-[9px] text-gray-600 tracking-wide leading-none mt-0.5 hidden sm:block">No ads &nbsp;·&nbsp; Study In Peace.</span>
-            </div>
-          </div>
-
-          {/* Right side — session pill */}
-          <div className="flex items-center gap-2 text-[11px] text-gray-500">
-            <div className="w-1.5 h-1.5 rounded-full transition-colors duration-300" style={{ background: isActive ? accent : "#333" }} />
-            <span className="hidden sm:inline">{isActive ? "In session" : "Ready"}</span>
-            <span className="font-bold text-white ml-1">{sessions} <span className="font-normal text-gray-600">sessions</span></span>
-          </div>
-        </header>
-
-        {/* Content grid */}
-        <div className="flex-1 flex flex-col lg:flex-row gap-6 p-5 md:p-8 lg:p-10">
-
-          {/* ── LEFT PANEL ── */}
-          <div className="flex flex-col gap-5 lg:w-80 xl:w-[340px] shrink-0">
-
-            {/* Pomodoro card */}
-            <div className="bg-[#0d0d0f] border border-white/[0.07] rounded-3xl p-7 flex flex-col items-center">
-
-              {/* Mode tabs */}
-              <div className="flex gap-1 p-1 bg-black/40 rounded-full border border-white/[0.06] mb-7 w-full">
-                {(Object.keys(MODES) as Mode[]).map((m) => (
-                  <button key={m} onClick={() => changeMode(m)}
-                    className="flex-1 text-[9px] font-black uppercase tracking-widest px-3 py-2 rounded-full transition-all duration-200"
-                    style={mode === m ? { background: MODES[m].color, color: "white" } : { color: "#555" }}>
-                    {MODES[m].label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Circular ring */}
-              <div className="relative flex items-center justify-center mb-7">
-                <svg width="196" height="196" className="-rotate-90" style={{ filter: `drop-shadow(0 0 20px ${accent}40)` }}>
-                  <circle cx="98" cy="98" r={radius} fill="none" stroke="#1a1a1e" strokeWidth="5" />
-                  <circle cx="98" cy="98" r={radius} fill="none" stroke={accent} strokeWidth="5"
-                    strokeLinecap="round"
-                    strokeDasharray={circumference}
-                    strokeDashoffset={circumference * (1 - progress)}
-                    className="transition-all duration-1000" />
-                </svg>
-                <div className="absolute flex flex-col items-center select-none">
-                  <span className="text-5xl font-mono font-black tabular-nums tracking-tighter">{formatTime(seconds)}</span>
-                  <span className="text-[10px] text-gray-500 font-semibold uppercase tracking-widest mt-1">
-                    {isActive ? "In session" : "Ready"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Controls */}
-              <div className="flex gap-2.5 w-full">
-                <button onClick={() => changeMode(mode)}
-                  className="p-3.5 rounded-2xl bg-white/[0.04] border border-white/[0.07] hover:bg-white/[0.07] transition-colors text-gray-500 hover:text-white">
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 4v6h6M23 20v-6h-6" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" />
-                  </svg>
-                </button>
-                <button onClick={() => setIsActive(!isActive)}
-                  className="flex-1 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-[0.98]"
-                  style={isActive
-                    ? { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }
-                    : { background: accent, color: "white" }}>
-                  {isActive ? "Pause" : "Start"}
-                </button>
-              </div>
-            </div>
-
-            {/* Search card */}
-            <div className="bg-[#0d0d0f] border border-white/[0.07] rounded-3xl p-5">
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-3">Search Music</p>
-              <div className="flex gap-2">
-                <input type="text" placeholder="lofi, rain, ambient..."
-                  className="flex-1 bg-black/40 border border-white/[0.07] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none focus:border-white/20 transition-colors"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && searchYoutube(input)} />
-                <button onClick={() => searchYoutube(input)}
-                  className="px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all active:scale-95"
-                  style={{ background: accent }}>
-                  {loading ? "···" : "Go"}
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* ── RIGHT PANEL ── */}
-          <div className="flex-1 flex flex-col gap-5 min-w-0">
-
-            {/* Search results */}
-            {results.length > 0 && (
-              <div className="bg-[#0d0d0f] border border-white/[0.07] rounded-3xl p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Results</p>
-                  <button onClick={() => setResults([])} className="text-[10px] text-gray-600 hover:text-white transition-colors">Clear</button>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {results.map((item) => (
-                    <div key={item.id.videoId} className="group relative">
-                      <div onClick={() => { setVideoId(item.id.videoId); setResults([]); }}
-                        className="relative aspect-video overflow-hidden rounded-xl border border-white/[0.06] cursor-pointer group-hover:border-white/20 transition-all">
-                        <img src={item.snippet.thumbnails.medium.url} alt={item.snippet.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-                          <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center opacity-0 group-hover:opacity-100 scale-75 group-hover:scale-100 transition-all duration-200">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="#000" className="ml-0.5"><path d="M8 5v14l11-7z" /></svg>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="mt-1.5 flex items-start gap-1">
-                        <p className="flex-1 text-[10px] text-gray-400 leading-relaxed line-clamp-2">{item.snippet.title}</p>
-                        <button onClick={() => saveToLibrary(item.id.videoId, item.snippet.title)}
-                          title="Save to library"
-                          className="shrink-0 mt-0.5 text-gray-600 hover:text-white transition-colors">
-                          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                            <path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z" /><path d="M17 21v-8H7v8M7 3v5h8" />
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Player */}
-            <div className="flex-1 bg-[#0d0d0f] border border-white/[0.07] rounded-3xl overflow-hidden min-h-56 relative">
-              <div id="yt-player" className="w-full h-full min-h-56" />
-              {/* Loop & shuffle quick controls overlay */}
-              {favorites.length > 0 && (
-                <div className="absolute bottom-3 right-3 flex gap-1.5">
-                  <button onClick={playRandom} title="Play random from library"
-                    className="p-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/[0.08] text-gray-400 hover:text-white transition-colors">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
-                    </svg>
-                  </button>
-                  <button onClick={() => setLoopLibrary((v) => !v)} title="Loop library"
-                    className="p-2 rounded-xl backdrop-blur-sm border transition-all"
-                    style={loopLibrary
-                      ? { background: `${accent}30`, borderColor: `${accent}60`, color: accent }
-                      : { background: "rgba(0,0,0,0.6)", borderColor: "rgba(255,255,255,0.08)", color: "#666" }}
-                  >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
-                      <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
-                    </svg>
-                  </button>
-                </div>
-              )}
-            </div>
-
-          </div>
+          ))}
         </div>
       </div>
 
-      {/* ── ABOUT MODAL ── */}
-      {showAbout && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-          <div className="bg-[#0d0d0f] border border-white/[0.08] p-8 rounded-3xl max-w-md w-full relative shadow-2xl">
-            <button onClick={() => setShowAbout(false)}
-              className="absolute top-5 right-5 p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
-            </button>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: accent }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-base font-black tracking-tight">Focusify</h2>
-                <p className="text-[10px] text-gray-500">Stable v8.0</p>
-              </div>
-            </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              A minimalist cockpit for deep work. Pomodoro technique meets YouTube ambient music. Built with Next.js and YouTube Data API.
-            </p>
-            <div className="mt-5 pt-5 border-t border-white/[0.06]">
-              <p className="text-[11px] text-gray-600 italic">Discipline equals freedom.</p>
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Footer */}
+      <p className="absolute bottom-6 text-[10px] text-gray-700 tracking-widest uppercase">No ads · Study In Peace.</p>
     </main>
   );
 }
+
