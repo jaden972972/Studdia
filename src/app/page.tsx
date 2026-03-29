@@ -7,8 +7,44 @@ export default function Home() {
   const [nombreInput, setNombreInput] = useState(""); 
   const [favoritos, setFavoritos] = useState<{id: string, nombre: string}[]>([]);
 
+  // --- LÓGICA POMODORO PLUS ULTRA ---
+  const [segundos, setSegundos] = useState(25 * 60);
+  const [activo, setActivo] = useState(false);
+  const [modo, setModo] = useState<"TRABAJO" | "CORTO" | "LARGO">("TRABAJO");
+
+  const formatearTiempo = (s: number) => {
+    const min = Math.floor(s / 60);
+    const seg = s % 60;
+    return `${min}:${seg < 10 ? "0" : ""}${seg}`;
+  };
+
+  // Efecto para el cronómetro y el título de la pestaña
   useEffect(() => {
-    const guardados = localStorage.getItem("focusify_favs");
+    let intervalo: any = null;
+    
+    if (activo && segundos > 0) {
+      intervalo = setInterval(() => setSegundos((s) => s - 1), 1000);
+      document.title = `(${formatearTiempo(segundos)}) Focusify`;
+    } else if (segundos === 0) {
+      setActivo(false);
+      document.title = "¡TIEMPO CUMPLIDO!";
+      alert("¡Sesión terminada! Tómate un respiro.");
+    } else {
+      document.title = "Focusify .";
+    }
+
+    return () => clearInterval(intervalo);
+  }, [activo, segundos]);
+
+  const cambiarModo = (nuevoModo: "TRABAJO" | "CORTO" | "LARGO", tiempo: number) => {
+    setModo(nuevoModo);
+    setSegundos(tiempo * 60);
+    setActivo(false);
+  };
+
+  // --- MEMORIA LOCAL ---
+  useEffect(() => {
+    const guardados = localStorage.getItem("focusify_plus_ultra");
     if (guardados) {
       try { setFavoritos(JSON.parse(guardados)); } catch (e) { console.error(e); }
     }
@@ -16,7 +52,7 @@ export default function Home() {
 
   useEffect(() => {
     if (favoritos.length > 0) {
-      localStorage.setItem("focusify_favs", JSON.stringify(favoritos));
+      localStorage.setItem("focusify_plus_ultra", JSON.stringify(favoritos));
     }
   }, [favoritos]);
 
@@ -26,117 +62,102 @@ export default function Home() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-[#030303] text-white p-4 md:p-10 font-sans relative overflow-x-hidden">
-      {/* DECORACIÓN */}
-      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))] opacity-5"></div>
-      <div className="absolute -top-40 -left-40 w-60 h-60 bg-red-900/20 rounded-full blur-[100px] pointer-events-none"></div>
-
-      <div className="relative w-full max-w-7xl flex flex-col items-center z-10">
+    <main className={`flex min-h-screen flex-col items-center transition-colors duration-1000 p-4 md:p-10 font-sans relative overflow-x-hidden ${
+      modo === "TRABAJO" ? "bg-[#030303]" : modo === "CORTO" ? "bg-[#051510]" : "bg-[#0a0a1a]"
+    }`}>
+      
+      {/* DECORACIÓN DE FONDO */}
+      <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center opacity-5 pointer-events-none"></div>
+      
+      <div className="relative w-full max-w-5xl flex flex-col items-center z-10">
         
-        {/* 1. CABECERA - Título mucho más pequeño en móvil */}
-        <div className="text-center mb-8 md:mb-16 mt-4 md:mt-0">
-          <h1 className="text-5xl md:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-b from-white to-gray-400 tracking-tighter mb-1 italic">
-            FOCUSIFY<span className="text-red-600">.</span>
-          </h1>
-          <p className="text-gray-500 font-medium tracking-[0.2em] uppercase text-[9px] md:text-xs backdrop-blur-sm bg-black/20 px-3 py-1 rounded-full border border-white/5 inline-block">
-            No Ads • Study In Peace
-          </p>
+        {/* 1. POMODORO PANEL */}
+        <div className="relative z-20 mb-8 bg-white/[0.03] border border-white/10 backdrop-blur-xl p-5 rounded-[2.5rem] flex flex-col items-center shadow-2xl w-full max-w-xs transition-transform hover:scale-[1.02]">
+          <div className="flex gap-2 mb-4">
+            <button onClick={() => cambiarModo("TRABAJO", 25)} className={`text-[10px] px-4 py-1.5 rounded-full border transition-all font-bold ${modo === "TRABAJO" ? "bg-red-600 border-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.4)]" : "border-white/10 text-gray-500"}`}>FOCUS</button>
+            <button onClick={() => cambiarModo("CORTO", 5)} className={`text-[10px] px-4 py-1.5 rounded-full border transition-all font-bold ${modo === "CORTO" ? "bg-green-600 border-green-600 text-white shadow-[0_0_15px_rgba(22,163,74,0.4)]" : "border-white/10 text-gray-500"}`}>REST</button>
+            <button onClick={() => cambiarModo("LARGO", 15)} className={`text-[10px] px-4 py-1.5 rounded-full border transition-all font-bold ${modo === "LARGO" ? "bg-blue-600 border-blue-600 text-white shadow-[0_0_15_rgba(37,99,235,0.4)]" : "border-white/10 text-gray-500"}`}>BREAK</button>
+          </div>
+          <h2 className="text-6xl font-mono font-black tracking-tighter mb-4 text-white tabular-nums">
+            {formatearTiempo(segundos)}
+          </h2>
+          <button 
+            onClick={() => setActivo(!activo)}
+            className={`w-full py-3 rounded-2xl font-black text-xs transition-all active:scale-95 ${activo ? "bg-white/10 text-white border border-white/20" : "bg-white text-black shadow-lg"}`}
+          >
+            {activo ? "PAUSAR" : "INICIAR SESIÓN"}
+          </button>
         </div>
 
-        {/* 2. PANEL DE CONTROL - Compacto */}
-        <div className="mb-8 w-full max-w-2xl flex flex-col gap-3 p-4 bg-white/[0.02] border border-white/5 rounded-2xl backdrop-blur-lg shadow-2xl">
-          <div className="flex flex-col md:flex-row gap-2">
-            <input 
-              type="text" 
-              placeholder="Link de YouTube..." 
-              value={input}
-              className="bg-white/[0.03] border border-white/5 px-4 py-3 rounded-xl w-full md:flex-[2] focus:border-red-600/50 outline-none text-white text-sm"
-              onChange={(e) => setInput(e.target.value)}
-            />
-            <input 
-              type="text" 
-              placeholder="Nombre..." 
-              value={nombreInput}
-              className="bg-white/[0.03] border border-white/5 px-4 py-3 rounded-xl w-full md:flex-1 focus:border-green-600/50 outline-none text-white text-sm"
-              onChange={(e) => setNombreInput(e.target.value)}
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <button 
-              onClick={() => cargarVideo(input)}
-              className="bg-red-600 hover:bg-red-500 py-3 rounded-xl font-bold transition-all active:scale-95 text-[10px] uppercase tracking-widest"
-            >
-              REPRODUCIR
-            </button>
-            <button 
-              onClick={() => {
-                const id = input.includes("v=") ? input.split("v=")[1].split("&")[0] : (input || videoId);
-                if (id && nombreInput) {
-                  setFavoritos([...favoritos, { id, nombre: nombreInput }]);
-                  setNombreInput(""); setInput("");
-                }
-              }}
-              className="bg-gray-800 hover:bg-gray-700 border border-white/5 py-3 rounded-xl font-bold transition-all active:scale-95 text-[10px] uppercase tracking-widest text-green-400"
-            >
-              ⭐ GUARDAR
-            </button>
-            <button 
-              onClick={() => {
-                if (favoritos.length > 0) {
-                  const random = favoritos[Math.floor(Math.random() * favoritos.length)];
-                  setVideoId(random.id);
-                  setInput(""); setNombreInput("");
-                }
-              }}
-              className="bg-white/5 hover:bg-white/10 border border-white/10 py-3 rounded-xl font-bold transition-all active:scale-95 text-[10px] uppercase tracking-widest text-gray-400"
-            >
-              🔀 Shuffle
-            </button>
-          </div>
-        </div>
-        
+        {/* 2. CABECERA MINI */}
+        <h1 className="text-4xl md:text-5xl font-black text-white/10 tracking-tighter mb-8 italic select-none">
+          FOCUSIFY<span className="text-red-600">.</span>
+        </h1>
+
         {/* 3. REPRODUCTOR */}
-        <div className="w-full max-w-4xl aspect-video rounded-2xl overflow-hidden border-2 border-[#111] shadow-2xl bg-black">
-          <iframe
-            className="w-full h-full"
-            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`}
-            title="Focus Player"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        <div className="w-full aspect-video rounded-3xl overflow-hidden border-2 border-white/5 shadow-[0_0_50px_-12px_rgba(0,0,0,0.5)] bg-black mb-8 relative">
+          <iframe 
+            className="w-full h-full" 
+            src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`} 
+            allow="autoplay; encrypted-media" 
             allowFullScreen
           ></iframe>
         </div>
 
-        {/* 4. BIBLIOTECA - Grid 1 columna en móvil */}
-        <div className="mt-10 w-full max-w-4xl px-2">
-          <h2 className="text-[10px] font-bold text-gray-600 uppercase tracking-[0.4em] text-center mb-6">
-            Tu Biblioteca
-          </h2>
-          {favoritos.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-              {favoritos.map((fav, index) => (
-                <button 
-                  key={index}
-                  onClick={() => { setVideoId(fav.id); setInput(""); setNombreInput(""); }}
-                  className="bg-white/[0.02] border border-white/5 p-4 rounded-xl hover:border-red-600/30 transition-all text-left group"
-                >
-                  <p className="font-bold text-xs text-gray-400 group-hover:text-white truncate uppercase">
-                    {fav.nombre}
-                  </p>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="text-center text-gray-800 text-[10px] italic">Biblioteca vacía</p>
-          )}
+        {/* 4. CONTROLES DE VÍDEO */}
+        <div className="w-full max-w-3xl grid grid-cols-1 md:grid-cols-2 gap-3 mb-10 bg-white/[0.02] p-4 rounded-3xl border border-white/5">
+          <input 
+            type="text" 
+            placeholder="URL de YouTube..." 
+            value={input} 
+            className="bg-white/5 px-5 py-3 rounded-xl text-sm outline-none focus:ring-1 focus:ring-red-600/50 transition-all"
+            onChange={(e) => setInput(e.target.value)} 
+          />
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              placeholder="Nombre..." 
+              value={nombreInput} 
+              className="bg-white/5 px-5 py-3 rounded-xl text-sm outline-none flex-1 focus:ring-1 focus:ring-green-600/50 transition-all"
+              onChange={(e) => setNombreInput(e.target.value)} 
+            />
+            <button 
+              onClick={() => { 
+                cargarVideo(input); 
+                if(nombreInput && input) setFavoritos([...favoritos, {id: input, nombre: nombreInput}]); 
+                setInput(""); setNombreInput(""); 
+              }} 
+              className="bg-red-600 hover:bg-red-500 px-6 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95"
+            >
+              ADD
+            </button>
+          </div>
         </div>
 
-        {/* 5. PRESETS */}
-        <div className="mt-12 mb-6 flex flex-wrap justify-center gap-4 py-4 border-t border-white/5 w-full max-w-2xl opacity-30">
-          <button onClick={() => setVideoId("jfKfPfyJRdk")} className="hover:text-red-500 text-[9px] font-bold uppercase tracking-widest">Lofi</button>
-          <button onClick={() => setVideoId("5qap5aO4i9A")} className="hover:text-blue-400 text-[9px] font-bold uppercase tracking-widest">Rain</button>
-          <button onClick={() => setVideoId("DWcJFNfaw9c")} className="hover:text-orange-400 text-[9px] font-bold uppercase tracking-widest">Fire</button>
+        {/* 5. BIBLIOTECA RESPONSIVE */}
+        <div className="w-full px-2">
+          <p className="text-center text-[10px] font-bold text-gray-600 uppercase tracking-[0.5em] mb-6">Tu Estación de Control</p>
+          <div className="flex flex-wrap justify-center gap-3">
+            {favoritos.map((f, i) => (
+              <button 
+                key={i} 
+                onClick={() => cargarVideo(f.id)} 
+                className="text-[10px] bg-white/[0.03] px-4 py-2 rounded-xl border border-white/5 hover:border-red-600/50 hover:bg-red-600/5 transition-all uppercase font-bold tracking-wider"
+              >
+                {f.nombre}
+              </button>
+            ))}
+            {favoritos.length > 0 && (
+              <button 
+                onClick={() => { if(confirm("¿Limpiar todo?")) { setFavoritos([]); localStorage.removeItem("focusify_plus_ultra"); }}}
+                className="text-[10px] text-red-900 hover:text-red-500 transition-colors font-bold px-4 py-2"
+              >
+                × BORRAR
+              </button>
+            )}
+          </div>
         </div>
+
       </div>
     </main>
   );
