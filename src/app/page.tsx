@@ -2,18 +2,21 @@
 import { useState, useEffect } from "react";
 
 export default function Home() {
+  // --- ESTADOS DE NAVEGACIÓN ---
   const [menuOpen, setMenuOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
-  const [videoId, setVideoId] = useState("V2Wl4i8VvjI"); // Jocko Willink Discipline Video
+
+  // --- ESTADOS DE YOUTUBE ---
+  const [videoId, setVideoId] = useState("ZbQh1ZPG5pc");
   const [input, setInput] = useState(""); 
   const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [favorites, setFavorites] = useState<{id: string, title: string}[]>([]);
   
-  // REEMPLAZA ESTO CON TU API KEY REAL
-  const API_KEY = "AIzaSyCtV90pZuRZva5XyGkBYle_bd8t_bwLqzk"; 
+  // Seguridad: Lee la clave del archivo .env.local o de Vercel
+  const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY; 
 
-  // --- 1. POMODORO LOGIC ---
+  // --- 1. LÓGICA POMODORO ---
   const [seconds, setSeconds] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
   const [mode, setMode] = useState<"WORK" | "SHORT" | "LONG">("WORK");
@@ -31,7 +34,7 @@ export default function Home() {
       document.title = `(${Math.floor(seconds/60)}:${(seconds%60).toString().padStart(2, '0')}) Focusify`;
     } else if (seconds === 0) {
       setIsActive(false);
-      alert("Session completed! Stay disciplined.");
+      alert("Session completed! Keep the discipline.");
     }
     return () => clearInterval(interval);
   }, [isActive, seconds]);
@@ -42,14 +45,14 @@ export default function Home() {
     return `${min}:${seg.toString().padStart(2, '0')}`;
   };
 
-  // --- 2. PERSISTENCE (Local Storage) ---
+  // --- 2. PERSISTENCIA (BIBLIOTECA) ---
   useEffect(() => {
-    const saved = localStorage.getItem("focusify_pro_v7");
+    const saved = localStorage.getItem("focusify_final_v8");
     if (saved) setFavorites(JSON.parse(saved));
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("focusify_pro_v7", JSON.stringify(favorites));
+    localStorage.setItem("focusify_final_v8", JSON.stringify(favorites));
   }, [favorites]);
 
   const saveToLibrary = (id: string, title: string) => {
@@ -58,43 +61,38 @@ export default function Home() {
     }
   };
 
-  // --- 3. YOUTUBE SEARCH ---
+  // --- 3. BÚSQUEDA YOUTUBE ---
   const searchYoutube = async (query: string) => {
-    if (!query) return;
+    if (!query || !API_KEY) return;
     setLoading(true);
     try {
       const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=6&q=${query}&type=video&key=${API_KEY}`);
       const data = await res.json();
       setResults(data.items || []);
-    } catch (e) { console.error(e); }
+    } catch (e) { console.error("Search Error:", e); }
     setLoading(false);
   };
 
   return (
     <main className="flex h-screen bg-[#030303] text-white font-sans overflow-hidden">
       
-      {/* ☰ MOBILE HAMBURGER BUTTON (Hidden on Desktop) */}
-      <button 
-        onClick={() => setMenuOpen(true)}
-        className="fixed top-6 left-6 z-50 p-4 bg-white/5 border border-white/10 rounded-2xl md:hidden backdrop-blur-md"
-      >
+      {/* ☰ MOBILE HAMBURGER (Solo móvil) */}
+      <button onClick={() => setMenuOpen(true)} className="fixed top-6 left-6 z-50 p-4 bg-white/5 border border-white/10 rounded-2xl md:hidden backdrop-blur-md">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
       </button>
 
-      {/* 📱 SIDEBAR / DESKTOP PANEL */}
+      {/* 📱 SIDEBAR (Fijo en PC, Desplegable en Móvil) */}
       <div className={`fixed inset-y-0 left-0 z-[60] w-72 bg-[#0a0a0a] border-r border-white/10 p-8 transform transition-transform duration-500 
-        ${menuOpen ? "translate-x-0" : "-translate-x-full"} 
-        md:relative md:translate-x-0 md:flex md:flex-col shrink-0`}>
+        ${menuOpen ? "translate-x-0" : "-translate-x-full"} md:relative md:translate-x-0 md:flex md:flex-col shrink-0 shadow-2xl`}>
         
         <button onClick={() => setMenuOpen(false)} className="absolute top-6 right-6 text-gray-500 hover:text-white md:hidden">✕</button>
-        
         <h3 className="text-[10px] font-black text-red-600 tracking-[0.2em] mb-10 uppercase italic">Focusify System</h3>
         
-        <div className="flex-1 overflow-y-auto pr-2 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto pr-2 space-y-8">
           <div>
-            <p className="text-[10px] text-gray-500 font-bold mb-4 uppercase tracking-widest">Library</p>
+            <p className="text-[10px] text-gray-500 font-bold mb-4 uppercase tracking-widest">Your Library</p>
             <div className="flex flex-col gap-2">
-              {favorites.length === 0 && <p className="text-[10px] text-gray-700 italic">No tracks saved.</p>}
+              {favorites.length === 0 && <p className="text-[10px] text-gray-700 italic font-mono text-center py-4">Empty shelf.</p>}
               {favorites.map((f, i) => (
                 <div key={i} className="flex gap-2 group">
                   <button onClick={() => { setVideoId(f.id); setMenuOpen(false); }} className="flex-1 text-left text-[11px] py-3 px-4 rounded-xl bg-white/5 border border-white/5 hover:border-red-600 truncate transition-all">
@@ -110,45 +108,44 @@ export default function Home() {
         <button onClick={() => { setShowAbout(true); setMenuOpen(false); }} className="mt-8 text-[10px] font-bold text-gray-500 hover:text-white transition-colors uppercase tracking-widest pt-4 border-t border-white/5">📄 Project Specs</button>
       </div>
 
-      {/* 🌑 MOBILE OVERLAY */}
+      {/* OVERLAY MÓVIL */}
       {menuOpen && <div onClick={() => setMenuOpen(false)} className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] md:hidden" />}
 
-      {/* 📄 ABOUT MODAL */}
+      {/* MODAL ABOUT */}
       {showAbout && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl animate-in fade-in duration-300">
-          <div className="bg-[#111] border border-white/10 p-10 rounded-[3rem] max-w-xl relative">
-            <button onClick={() => setShowAbout(false)} className="absolute top-6 right-8 text-gray-500 hover:text-white">Close</button>
-            <h2 className="text-3xl font-black mb-4 tracking-tighter text-white">FOCUSIFY<span className="text-red-600">.</span></h2>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6 font-medium">
-              A minimalist **Deep Work** cockpit. Built to bridge the gap between procrastination and flow. It merges the **Pomodoro technique** with a dedicated **YouTube Search Engine** to keep you in the zone.
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
+          <div className="bg-[#111] border border-white/10 p-10 rounded-[3rem] max-w-xl relative shadow-2xl">
+            <button onClick={() => setShowAbout(false)} className="absolute top-6 right-8 text-gray-500 hover:text-white font-bold">CLOSE</button>
+            <h2 className="text-3xl font-black mb-4 tracking-tighter text-white uppercase italic">Focusify<span className="text-red-600">.</span></h2>
+            <p className="text-gray-400 text-sm leading-relaxed mb-6">
+              A minimalist Cockpit for Deep Work. Built with Next.js 14 and YouTube Data API. Discipline equals freedom. Stop procrastinating, start focusing.
             </p>
             <div className="flex gap-3">
-              <span className="text-[9px] font-bold bg-red-600/10 text-red-500 px-3 py-1 rounded-full border border-red-600/20">NEXT.JS 14</span>
-              <span className="text-[9px] font-bold bg-blue-600/10 text-blue-500 px-3 py-1 rounded-full border border-blue-600/20">YOUTUBE API v3</span>
+              <span className="text-[9px] font-bold bg-red-600/10 text-red-500 px-3 py-1 rounded-full border border-red-600/20 uppercase tracking-widest">Stable v8.0</span>
             </div>
           </div>
         </div>
       )}
 
-      {/* 🏗️ MAIN CONTENT AREA */}
-      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#050505] to-[#030303] flex flex-col items-center p-6 md:p-12 custom-scrollbar">
+      {/* 🏗️ ÁREA DE CONTENIDO PRINCIPAL */}
+      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-[#050505] to-[#030303] flex flex-col items-center p-6 md:p-12">
         
-        {/* TIMER PANEL */}
-        <div className="mb-10 bg-white/[0.02] border border-white/10 backdrop-blur-3xl p-8 rounded-[3rem] flex flex-col items-center w-full max-w-sm shadow-[0_30px_100px_-20px_rgba(0,0,0,1)]">
+        {/* PANEL POMODORO */}
+        <div className="mb-10 bg-white/[0.02] border border-white/10 backdrop-blur-3xl p-8 rounded-[3rem] flex flex-col items-center w-full max-w-sm shadow-2xl">
           <div className="flex gap-2 mb-6 bg-black/50 p-1 rounded-full border border-white/5">
             <button onClick={() => changeMode("WORK", 25)} className={`text-[9px] px-5 py-2 rounded-full font-black transition-all ${mode === "WORK" ? "bg-red-600 text-white" : "text-gray-500 hover:text-white"}`}>FOCUS</button>
             <button onClick={() => changeMode("SHORT", 5)} className={`text-[9px] px-5 py-2 rounded-full font-black transition-all ${mode === "SHORT" ? "bg-green-600 text-white" : "text-gray-500 hover:text-white"}`}>SHORT</button>
             <button onClick={() => changeMode("LONG", 15)} className={`text-[9px] px-5 py-2 rounded-full font-black transition-all ${mode === "LONG" ? "bg-blue-600 text-white" : "text-gray-500 hover:text-white"}`}>LONG</button>
           </div>
           <h2 className="text-7xl font-mono font-black mb-6 tabular-nums tracking-tighter text-white">{formatTime(seconds)}</h2>
-          <button onClick={() => setIsActive(!isActive)} className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 ${isActive ? "bg-white/10 text-white border border-white/20" : "bg-white text-black shadow-xl hover:bg-gray-200"}`}>
+          <button onClick={() => setIsActive(!isActive)} className={`w-full py-4 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all active:scale-95 ${isActive ? "bg-white/10 text-white border border-white/20" : "bg-white text-black"}`}>
             {isActive ? "PAUSE SESSION" : "START FOCUSING"}
           </button>
         </div>
 
-        {/* SEARCH ENGINE */}
+        {/* BUSCADOR */}
         <div className="w-full max-w-3xl mb-10">
-          <div className="flex gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 focus-within:border-red-600/50 transition-all mb-4 group">
+          <div className="flex gap-2 bg-white/5 p-2 rounded-2xl border border-white/10 focus-within:border-red-600/50 transition-all mb-4">
             <input 
               type="text" placeholder="Search focus music, rain, lofi..." 
               className="bg-transparent flex-1 px-4 py-2 outline-none text-sm text-white placeholder:text-gray-600"
@@ -179,8 +176,8 @@ export default function Home() {
           )}
         </div>
 
-        {/* PLAYER */}
-        <div className="w-full max-w-5xl aspect-video rounded-[3rem] overflow-hidden border border-white/5 shadow-[0_40px_100px_-30px_rgba(0,0,0,1)] bg-black mb-12 shrink-0">
+        {/* REPRODUCTOR */}
+        <div className="w-full max-w-5xl aspect-video rounded-[3rem] overflow-hidden border border-white/5 shadow-2xl bg-black mb-12 shrink-0">
           <iframe className="w-full h-full" src={`https://www.youtube.com/embed/${videoId}?autoplay=1&modestbranding=1&rel=0`} allow="autoplay; encrypted-media" allowFullScreen></iframe>
         </div>
 
