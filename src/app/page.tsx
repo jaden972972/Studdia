@@ -210,13 +210,15 @@ export default function Landing() {
           >
             Sign in
           </button>
-          <button
-            onClick={() => router.push("/cockpit")}
+          <a
+            href="https://focusify-three.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95"
             style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 0 24px rgba(139,92,246,0.3)" }}
           >
             Open App →
-          </button>
+          </a>
         </div>
       </nav>
 
@@ -259,13 +261,15 @@ export default function Landing() {
 
         {/* CTAs */}
         <div className="flex flex-wrap gap-3 justify-center mb-16">
-          <button
-            onClick={() => router.push("/cockpit")}
+          <a
+            href="https://focusify-three.vercel.app/"
+            target="_blank"
+            rel="noopener noreferrer"
             className="px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all duration-200 active:scale-95"
             style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 0 40px rgba(139,92,246,0.35)" }}
           >
             Start Focusing — free
-          </button>
+          </a>
         </div>
 
         {/* Stats */}
@@ -293,7 +297,7 @@ export default function Landing() {
               <div className="w-3 h-3 rounded-full bg-green-500/60" />
             </div>
             <div className="flex-1 mx-4 h-6 rounded-md bg-white/[0.04] flex items-center px-3">
-              <span className="text-gray-600 text-xs">studdia.vercel.app/cockpit</span>
+              <span className="text-gray-600 text-xs">focusify-three.vercel.app</span>
             </div>
           </div>
           {/* UI skeleton */}
@@ -475,12 +479,14 @@ export default function Landing() {
             No sign‑up required. Open the app and start your first session in under 10 seconds.
           </p>
           <div className="relative flex flex-wrap gap-3 justify-center">
-            <button
-              onClick={() => router.push("/cockpit")}
+            <a
+              href="https://focusify-three.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
               className="px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all duration-200 active:scale-95"
               style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 0 50px rgba(139,92,246,0.4)" }}>
               Open app — free
-            </button>
+            </a>
             <button
               onClick={() => router.push("/login")}
               className="px-8 py-4 rounded-2xl font-bold text-sm text-gray-400 hover:text-white bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
@@ -501,7 +507,7 @@ export default function Landing() {
         </div>
         <div className="flex items-center gap-5 text-[11px] text-gray-600">
           <a href="https://github.com/jaden972972/Studdia" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">GitHub</a>
-          <button onClick={() => router.push("/cockpit")} className="hover:text-gray-400 transition-colors">App</button>
+          <a href="https://focusify-three.vercel.app/" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">App</a>
           <button onClick={() => router.push("/login")} className="hover:text-gray-400 transition-colors">Sign in</button>
         </div>
       </footer>
