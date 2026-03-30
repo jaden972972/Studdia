@@ -1,6 +1,6 @@
 "use client";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -29,7 +29,14 @@ export default function LoginPage() {
 
         {/* Google button */}
         <button
-          onClick={() => signIn("google", { callbackUrl: "/cockpit" })}
+          onClick={async () => {
+            await supabaseBrowser.auth.signInWithOAuth({
+              provider: "google",
+              options: {
+                redirectTo: `${window.location.origin}/api/auth/callback`,
+              },
+            });
+          }}
           className="w-full flex items-center justify-center gap-3 px-6 py-3.5 rounded-2xl bg-white text-black font-bold text-sm hover:bg-gray-100 transition-colors active:scale-95"
         >
           {/* Google G logo */}

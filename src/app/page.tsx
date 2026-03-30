@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import PomodoroSection from "@/app/components/PomodoroSection";
 
 const WORDS = ["Focus.", "Ship.", "Win."];
 
@@ -365,6 +366,9 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      {/* ── POMODORO SECTION ── */}
+      <PomodoroSection />
 
       {/* ── FEATURES GRID ── */}
       <section className="relative z-10 px-6 pb-24 max-w-5xl mx-auto w-full">
