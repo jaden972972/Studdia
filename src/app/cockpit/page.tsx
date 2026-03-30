@@ -81,6 +81,7 @@ export default function Home() {
   const [newPlaylistName, setNewPlaylistName] = useState("");
   const [saveMenuFor, setSaveMenuFor] = useState<string | null>(null);
   const [loopPlaylist, setLoopPlaylist] = useState(false);
+  const [showPlayer, setShowPlayer] = useState(true);
 
   const API_KEY = process.env.NEXT_PUBLIC_YOUTUBE_API_KEY;
 
@@ -700,29 +701,52 @@ export default function Home() {
             )}
 
             {/* Player */}
-            <div className="flex-1 bg-[#0d0d0f] border border-white/[0.07] rounded-3xl overflow-hidden min-h-56 relative">
-              <div id="yt-player" className="w-full h-full min-h-56" />
-              {/* Loop & shuffle quick controls overlay */}
-              {activeTracks.length > 0 && (
-                <div className="absolute bottom-3 right-3 flex gap-1.5">
-                  <button onClick={playRandom} title="Play random from active playlist"
-                    className="p-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/[0.08] text-gray-400 hover:text-white transition-colors">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
-                    </svg>
-                  </button>
-                  <button onClick={() => setLoopPlaylist(v => !v)} title="Loop playlist"
-                    className="p-2 rounded-xl backdrop-blur-sm border transition-all"
-                    style={loopPlaylist
-                      ? { background: `${accent}30`, borderColor: `${accent}60`, color: accent }
-                      : { background: "rgba(0,0,0,0.6)", borderColor: "rgba(255,255,255,0.08)", color: "#666" }}>
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
-                      <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
-                    </svg>
-                  </button>
-                </div>
-              )}
+            <div className="bg-[#0d0d0f] border border-white/[0.07] rounded-3xl overflow-hidden relative"
+              style={{ flex: showPlayer ? "1" : "0 0 auto" }}>
+              {/* Header bar with toggle */}
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-white/[0.05]">
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Player</p>
+                <button
+                  onClick={() => setShowPlayer(v => !v)}
+                  title={showPlayer ? "Hide video" : "Show video"}
+                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold text-gray-500 hover:text-white hover:bg-white/[0.05] transition-all">
+                  {showPlayer ? (
+                    <>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19M1 1l22 22"/></svg>
+                      Hide
+                    </>
+                  ) : (
+                    <>
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                      Show
+                    </>
+                  )}
+                </button>
+              </div>
+              <div className="relative min-h-56" style={{ display: showPlayer ? "block" : "none" }}>
+                <div id="yt-player" className="w-full h-full min-h-56" />
+                {/* Loop & shuffle quick controls overlay */}
+                {activeTracks.length > 0 && (
+                  <div className="absolute bottom-3 right-3 flex gap-1.5">
+                    <button onClick={playRandom} title="Play random from active playlist"
+                      className="p-2 rounded-xl bg-black/60 backdrop-blur-sm border border-white/[0.08] text-gray-400 hover:text-white transition-colors">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M16 3h5v5M4 20L21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/>
+                      </svg>
+                    </button>
+                    <button onClick={() => setLoopPlaylist(v => !v)} title="Loop playlist"
+                      className="p-2 rounded-xl backdrop-blur-sm border transition-all"
+                      style={loopPlaylist
+                        ? { background: `${accent}30`, borderColor: `${accent}60`, color: accent }
+                        : { background: "rgba(0,0,0,0.6)", borderColor: "rgba(255,255,255,0.08)", color: "#666" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M17 2l4 4-4 4"/><path d="M3 11V9a4 4 0 014-4h14"/>
+                        <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
+                      </svg>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
           </div>
