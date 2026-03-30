@@ -1,4 +1,4 @@
-"use client";
+ï»¿"use client";
 import { useRouter } from "next/navigation";
 
 const CYCLE = [
@@ -69,13 +69,11 @@ export default function PomodoroSection() {
 
   return (
     <section className="relative z-10 w-full py-24 px-6 md:px-16 overflow-hidden">
-      {/* Background glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{ background: "radial-gradient(ellipse 80% 50% at 50% 100%, rgba(139,92,246,0.06) 0%, transparent 70%)" }}
       />
 
-      {/* Section label */}
       <div className="relative z-10 flex justify-center mb-12">
         <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 text-violet-300 text-xs font-semibold tracking-widest uppercase">
           <svg width="8" height="8" viewBox="0 0 10 10" fill="currentColor"><circle cx="5" cy="5" r="5" /></svg>
@@ -83,13 +81,10 @@ export default function PomodoroSection() {
         </span>
       </div>
 
-      {/* Main grid */}
       <div className="relative z-10 max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-
-        {/* LEFT */}
         <div className="flex flex-col gap-6">
           <h2 className="text-4xl md:text-5xl font-black tracking-tight leading-tight text-white">
-            Your brain{"'"}t built{" "}
+            Your brain was not built{" "}
             <span
               className="bg-clip-text text-transparent"
               style={{ backgroundImage: "linear-gradient(135deg, #a78bfa, #7c3aed)" }}
@@ -103,10 +98,9 @@ export default function PomodoroSection() {
           <p className="text-gray-400 text-base md:text-lg leading-relaxed max-w-lg">
             The <span className="text-white font-semibold">Pomodoro Technique</span> is the most
             battle-tested framework for deep work. Studdia wraps it in a distraction-free
-            environment with adaptive music that keeps your mind in the zone — session after session.
+            environment with adaptive music that keeps your mind in the zone, session after session.
           </p>
 
-          {/* Stats */}
           <div className="grid grid-cols-3 gap-4 mt-2">
             {BENEFITS.map((b) => (
               <div key={b.stat} className="flex flex-col gap-1 p-4 rounded-2xl border border-white/[0.06] bg-white/[0.02]">
@@ -117,7 +111,6 @@ export default function PomodoroSection() {
             ))}
           </div>
 
-          {/* CTA */}
           <button
             onClick={() => router.push("/cockpit")}
             className="mt-2 w-fit flex items-center gap-3 px-7 py-3.5 rounded-2xl font-bold text-sm text-white transition-all duration-200 active:scale-95 hover:brightness-110"
@@ -135,14 +128,13 @@ export default function PomodoroSection() {
             </svg>
           </button>
 
-          <p className="text-[11px] text-gray-600">Free forever · No account required · Zero ads</p>
+          <p className="text-[11px] text-gray-600">Free forever - No account required - Zero ads</p>
         </div>
 
-        {/* RIGHT — Cycle visualizer */}
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between mb-1">
             <span className="text-xs font-semibold text-gray-500 uppercase tracking-widest">One Pomodoro Cycle</span>
-            <span className="text-xs text-gray-600">˜ 80 min total</span>
+            <span className="text-xs text-gray-600">~80 min total</span>
           </div>
 
           {CYCLE.map((step, i) => (
@@ -179,7 +171,6 @@ export default function PomodoroSection() {
             </div>
           ))}
 
-          {/* Progress bar */}
           <div className="mt-4 p-4 rounded-2xl border border-white/[0.05] bg-white/[0.02]">
             <div className="flex justify-between text-[10px] text-gray-600 mb-2 font-medium">
               <span>Session progress</span>
@@ -200,7 +191,7 @@ export default function PomodoroSection() {
           </div>
 
           <p className="text-[11px] text-gray-600 text-center mt-1">
-            Repeat 2–4 cycles for a complete deep work session.{" "}
+            Repeat 2-4 cycles for a complete deep work session.{" "}
             <span className="text-violet-400">Studdia tracks every one.</span>
           </p>
         </div>
