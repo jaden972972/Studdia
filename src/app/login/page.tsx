@@ -1,9 +1,21 @@
 "use client";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabaseBrowser";
 
 export default function LoginPage() {
   const router = useRouter();
+
+  useEffect(() => {
+    const { data: { subscription } } = supabaseBrowser.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          router.replace("/cockpit");
+        }
+      }
+    );
+    return () => subscription.unsubscribe();
+  }, [router]);
 
   return (
     <main className="h-screen w-screen bg-[#060608] text-white flex items-center justify-center font-sans">
