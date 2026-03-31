@@ -1,9 +1,8 @@
 import { createBrowserClient } from "@supabase/ssr";
-import type { SupabaseClient } from "@supabase/supabase-js";
 
-let _client: SupabaseClient | null = null;
+let _client: ReturnType<typeof createBrowserClient> | null = null;
 
-function getClient(): SupabaseClient {
+export function getSupabaseBrowser() {
   if (!_client) {
     _client = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,9 +11,3 @@ function getClient(): SupabaseClient {
   }
   return _client;
 }
-
-export const supabaseBrowser = new Proxy({} as SupabaseClient, {
-  get(_, prop) {
-    return (getClient() as any)[prop];
-  },
-});

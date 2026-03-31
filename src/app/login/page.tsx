@@ -1,7 +1,7 @@
 "use client";
 import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { supabaseBrowser } from "@/lib/supabaseBrowser";
+import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
 
 function LoginContent() {
   const router = useRouter();
@@ -10,7 +10,7 @@ function LoginContent() {
 
   async function handleGoogleLogin() {
     try {
-      const { error } = await supabaseBrowser.auth.signInWithOAuth({
+      const { error } = await getSupabaseBrowser().auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
@@ -25,7 +25,8 @@ function LoginContent() {
   }
 
   useEffect(() => {
-    const { data: { subscription } } = supabaseBrowser.auth.onAuthStateChange(
+    const supabase = getSupabaseBrowser();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (session) {
           router.replace("/cockpit");
