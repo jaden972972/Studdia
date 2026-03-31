@@ -10,6 +10,12 @@ function LoginContent() {
   const errorMsg = searchParams.get("error");
 
   async function handleGoogleLogin() {
+    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    if (!url || !key) {
+      window.location.href = `/login?error=${encodeURIComponent("Missing env vars: URL=" + url + " KEY=" + (key ? "set" : "missing"))}`;
+      return;
+    }
     try {
       const { data, error } = await getSupabaseBrowser().auth.signInWithOAuth({
         provider: "google",
@@ -24,6 +30,8 @@ function LoginContent() {
       }
       if (data.url) {
         window.location.href = data.url;
+      } else {
+        window.location.href = `/login?error=${encodeURIComponent("No redirect URL returned from Supabase")}`;
       }
     } catch (e: any) {
       window.location.href = `/login?error=${encodeURIComponent(e?.message ?? "Unknown error")}`;
