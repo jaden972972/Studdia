@@ -7,9 +7,12 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/cockpit";
 
-  if (code) {
+  if (!code) {
+    return NextResponse.redirect(`${origin}/login?error=no_code`);
+  }
+
+  try {
     const cookieStore = await cookies();
-    // Cookies must be set on the response object, not the cookieStore
     const redirectTo = NextResponse.redirect(`${origin}${next}`);
 
     const supabase = createServerClient(
@@ -32,12 +35,14 @@ export async function GET(request: NextRequest) {
       return redirectTo;
     }
 
-    // Pass actual error message for debugging
     console.error("[auth/callback] exchangeCodeForSession error:", error.message);
     return NextResponse.redirect(
       `${origin}/login?error=${encodeURIComponent(error.message)}`
     );
+  } catch (e: any) {
+    console.error("[auth/callback] unexpected error:", e?.message);
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(e?.message ?? "callback_exception")}`
+    );
   }
-
-  return NextResponse.redirect(`${origin}/login?error=no_code`);
 }
