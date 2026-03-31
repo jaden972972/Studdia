@@ -11,14 +11,19 @@ function LoginContent() {
 
   async function handleGoogleLogin() {
     try {
-      const { error } = await getSupabaseBrowser().auth.signInWithOAuth({
+      const { data, error } = await getSupabaseBrowser().auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`,
+          skipBrowserRedirect: true,
         },
       });
       if (error) {
         window.location.href = `/login?error=${encodeURIComponent(error.message)}`;
+        return;
+      }
+      if (data.url) {
+        window.location.href = data.url;
       }
     } catch (e: any) {
       window.location.href = `/login?error=${encodeURIComponent(e?.message ?? "Unknown error")}`;
