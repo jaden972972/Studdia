@@ -282,14 +282,18 @@ export default function Home() {
       if (!loaded) {
         const local = localStorage.getItem("studdia_playlists_v1");
         if (local) {
-          const parsed: Playlist[] = JSON.parse(local);
-          const existingIds = new Set(parsed.map((p: Playlist) => p.id));
-          const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
-          const merged = parsed.map((p: Playlist) => {
-            const def = DEFAULT_PLAYLISTS.find(d => d.id === p.id);
-            return p.tracks.length === 0 && def && def.tracks.length > 0 ? { ...p, tracks: def.tracks } : p;
-          });
-          setPlaylists([...merged, ...missing]);
+          try {
+            const parsed: Playlist[] = JSON.parse(local);
+            const existingIds = new Set(parsed.map((p: Playlist) => p.id));
+            const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
+            const merged = parsed.map((p: Playlist) => {
+              const def = DEFAULT_PLAYLISTS.find(d => d.id === p.id);
+              return p.tracks.length === 0 && def && def.tracks.length > 0 ? { ...p, tracks: def.tracks } : p;
+            });
+            setPlaylists([...merged, ...missing]);
+          } catch {
+            localStorage.removeItem("studdia_playlists_v1");
+          }
         }
       }
 

@@ -1,8 +1,7 @@
 "use client";
-import { Suspense, useEffect } from "react";
+import { Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { getSupabaseBrowser } from "@/lib/supabaseBrowser";
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { signIn } from "next-auth/react";
 
 function LoginContent() {
   const router = useRouter();
@@ -10,45 +9,13 @@ function LoginContent() {
   const errorMsg = searchParams.get("error");
 
   async function handleGoogleLogin() {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!url || !key) {
-      window.location.href = `/login?error=${encodeURIComponent("Missing env vars: URL=" + url + " KEY=" + (key ? "set" : "missing"))}`;
-      return;
-    }
     try {
-      const { data, error } = await getSupabaseBrowser().auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-          skipBrowserRedirect: true,
-        },
-      });
-      if (error) {
-        window.location.href = `/login?error=${encodeURIComponent(error.message)}`;
-        return;
-      }
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        window.location.href = `/login?error=${encodeURIComponent("No redirect URL returned from Supabase")}`;
-      }
-    } catch (e: any) {
-      window.location.href = `/login?error=${encodeURIComponent(e?.message ?? "Unknown error")}`;
+      await signIn("google", { callbackUrl: "/cockpit" });
+    } catch (e: unknown) {
+      const message = e instanceof Error ? e.message : "Unknown error";
+      window.location.href = `/login?error=${encodeURIComponent(message)}`;
     }
   }
-
-  useEffect(() => {
-    const supabase = getSupabaseBrowser();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event: AuthChangeEvent, session: Session | null) => {
-        if (session) {
-          router.replace("/cockpit");
-        }
-      }
-    );
-    return () => subscription.unsubscribe();
-  }, [router]);
 
   return (
     <main className="h-screen w-screen bg-[#060608] text-white flex items-center justify-center font-sans">

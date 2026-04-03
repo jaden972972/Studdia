@@ -29,7 +29,17 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { playlists } = await req.json();
+  let playlists: unknown;
+  try {
+    const body = await req.json();
+    playlists = body?.playlists;
+  } catch {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+  }
+
+  if (!Array.isArray(playlists)) {
+    return NextResponse.json({ error: "playlists must be an array" }, { status: 400 });
+  }
 
   const { error } = await supabase
     .from("user_playlists")
