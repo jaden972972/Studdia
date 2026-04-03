@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 type Priority = "high" | "medium" | "low";
 type Filter = "all" | "active" | "done";
@@ -37,6 +38,7 @@ function saveTasks(tasks: Task[]) {
 }
 
 export default function TasksPage() {
+  const { data: session } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [input, setInput] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
@@ -45,17 +47,58 @@ export default function TasksPage() {
   const [showDone, setShowDone] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
   const initialized = useRef(false);
+  const sessionRef = useRef(session);
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => { sessionRef.current = session; }, [session]);
 
-  // Load from localStorage once
+  // Load: Supabase if logged in, localStorage otherwise
   useEffect(() => {
-    setTasks(loadTasks());
-    initialized.current = true;
-  }, []);
+    if (session === undefined) return;
+    initialized.current = false;
 
-  // Persist on change
+    const load = async () => {
+      let loaded = false;
+
+      if (session?.user) {
+        try {
+          const res = await fetch("/api/tasks");
+          const data = await res.json();
+          if (Array.isArray(data.tasks)) {
+            setTasks(data.tasks);
+            loaded = true;
+          }
+        } catch (e) {
+          console.error("Error loading tasks from Supabase:", e);
+        }
+      }
+
+      if (!loaded) {
+        setTasks(loadTasks());
+      }
+
+      setTimeout(() => { initialized.current = true; }, 0);
+    };
+
+    load();
+  }, [session]);
+
+  // Save: always localStorage + Supabase (debounced) when logged in
   useEffect(() => {
     if (!initialized.current) return;
     saveTasks(tasks);
+    if (sessionRef.current?.user) {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = setTimeout(() => {
+        fetch("/api/tasks", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ tasks }),
+        }).catch(e => console.error("Error saving tasks:", e));
+      }, 1500);
+    }
+    return () => {
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+    };
   }, [tasks]);
 
   const add = () => {
@@ -123,6 +166,14 @@ export default function TasksPage() {
           </svg>
           Back to cockpit
         </Link>
+        <div className="flex items-center gap-1.5 text-[10px]" style={{ color: session?.user ? "#10b981" : "#4b5563" }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            {session?.user
+              ? <path d="M18 8h1a4 4 0 010 8h-1M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8zM6 1v3M10 1v3M14 1v3"/>
+              : <path d="M4 4h16v16H4zM8 4V2M16 4V2"/>}
+          </svg>
+          {session?.user ? "Synced to cloud" : "Saved locally"}
+        </div>
       </header>
 
       <div className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
