@@ -427,7 +427,10 @@ export default function Home() {
   };
 
   return (
-    <main className="h-screen w-screen bg-[#080808] text-white overflow-hidden flex font-sans">
+    <main className="h-screen w-screen text-white overflow-hidden flex font-sans"
+      style={isPro
+        ? { background: "radial-gradient(ellipse at 30% 50%, #0e0a1a 0%, #080808 60%, #000 100%)" }
+        : { background: "#080808" }}>
 
       {/* ── SIDEBAR OVERLAY (mobile) ── */}
       {sidebarOpen && (
@@ -440,7 +443,9 @@ export default function Home() {
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
         md:relative md:translate-x-0 md:flex shrink-0
         ${isActive ? "md:opacity-20 md:hover:opacity-100" : ""}`}
-        style={{ borderColor: isPro ? "rgba(245,158,11,0.25)" : "rgba(255,255,255,0.06)" }}>
+        style={isPro
+          ? { borderColor: "rgba(139,92,246,0.55)", boxShadow: "4px 0 24px rgba(139,92,246,0.18), inset -1px 0 0 rgba(168,85,247,0.12)" }
+          : { borderColor: "rgba(255,255,255,0.06)" }}>
 
         {/* Brand */}
         <div className="flex items-center justify-between">
@@ -453,10 +458,10 @@ export default function Home() {
             </div>
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
-                <span className="font-black text-sm tracking-tight leading-none">Studdia</span>
+                <span className={`font-black text-sm leading-none ${isPro ? "tracking-wider" : "tracking-tight"}`}>Studdia</span>
                 {isPro && (
-                  <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md leading-none"
-                    style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+                  <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md leading-none pro-badge-anim"
+                    style={{ border: "1px solid rgba(139,92,246,0.45)", background: "rgba(139,92,246,0.12)" }}>
                     PRO
                   </span>
                 )}
@@ -678,7 +683,9 @@ export default function Home() {
 
         {/* ── TOPBAR ── */}
         <header className="shrink-0 flex items-center justify-between px-6 md:px-10 py-4 border-b transition-colors duration-500"
-          style={{ borderColor: isPro ? "rgba(245,158,11,0.2)" : "rgba(255,255,255,0.05)" }}>
+          style={isPro
+            ? { borderColor: "rgba(139,92,246,0.5)", boxShadow: "0 1px 20px rgba(139,92,246,0.15)" }
+            : { borderColor: "rgba(255,255,255,0.05)" }}>
           {/* Mobile hamburger */}
           <button onClick={() => setSidebarOpen(true)} className="p-2 rounded-xl bg-white/[0.05] hover:bg-white/[0.08] transition-colors md:hidden">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 12h18M3 6h18M3 18h18" /></svg>
@@ -743,13 +750,13 @@ export default function Home() {
                   title={session.user.name ?? ""}
                   className="w-7 h-7 rounded-full shrink-0 transition-all"
                   style={isPro
-                    ? { border: "2px solid #f59e0b", boxShadow: "0 0 12px rgba(245,158,11,0.6)" }
+                    ? { border: "2px solid #8b5cf6", boxShadow: "0 0 14px rgba(139,92,246,0.7)" }
                     : { border: "1px solid rgba(255,255,255,0.1)" }}
                 />
                 {isPro && (
                   <div
                     className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full flex items-center justify-center"
-                    style={{ background: "linear-gradient(135deg,#f59e0b,#d97706)", boxShadow: "0 0 8px rgba(245,158,11,0.9)" }}
+                    style={{ background: "linear-gradient(135deg,#8b5cf6,#3b82f6)", boxShadow: "0 0 10px rgba(139,92,246,0.9)" }}
                     title="Pro member">
                     <svg width="7" height="7" viewBox="0 0 24 24" fill="white">
                       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
@@ -760,8 +767,8 @@ export default function Home() {
             )}
             {isPro && (
               <span
-                className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.18em] px-2 py-0.5 rounded-md"
-                style={{ background: "rgba(245,158,11,0.12)", color: "#f59e0b", border: "1px solid rgba(245,158,11,0.3)" }}>
+                className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.18em] px-2 py-0.5 rounded-md pro-badge-anim"
+                style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.4)" }}>
                 Pro
               </span>
             )}

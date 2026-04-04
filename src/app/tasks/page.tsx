@@ -188,7 +188,10 @@ export default function TasksPage() {
   const doneTasks   = visible.filter((t) => t.done);
 
   return (
-    <main className="min-h-screen bg-[#080808] text-white font-sans flex flex-col">
+    <main className="min-h-screen text-white font-sans flex flex-col"
+      style={isPro
+        ? { background: "radial-gradient(ellipse at 50% 0%, #0e0a1a 0%, #080808 50%, #000 100%)" }
+        : { background: "#080808" }}>
       <ProModal open={showProModal} onClose={() => setShowProModal(false)} />
       {/* ── HEADER ── */}
       <header className="shrink-0 flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05] bg-black/30 backdrop-blur-sm">
@@ -238,8 +241,8 @@ export default function TasksPage() {
               <>
                 <PremiumPlant />
                 <span
-                  className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border"
-                  style={{ color: "#a78bfa", background: "rgba(139,92,246,0.1)", borderColor: "rgba(139,92,246,0.3)" }}
+                  className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border pro-badge-anim"
+                  style={{ background: "rgba(139,92,246,0.1)", borderColor: "rgba(139,92,246,0.4)" }}
                 >
                   Pro
                 </span>
@@ -403,7 +406,7 @@ export default function TasksPage() {
             </div>
           )}
           {activeTasks.map((task) => (
-            <TaskRow key={task.id} task={task} onToggle={toggle} onRemove={remove} />
+            <TaskRow key={task.id} task={task} onToggle={toggle} onRemove={remove} isPro={isPro} />
           ))}
 
           {/* Done section */}
@@ -430,7 +433,7 @@ export default function TasksPage() {
                 </button>
               </div>
               {showDone && doneTasks.map((task) => (
-                <TaskRow key={task.id} task={task} onToggle={toggle} onRemove={remove} />
+                <TaskRow key={task.id} task={task} onToggle={toggle} onRemove={remove} isPro={isPro} />
               ))}
             </>
           )}
@@ -444,18 +447,20 @@ function TaskRow({
   task,
   onToggle,
   onRemove,
+  isPro,
 }: {
   task: Task;
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
+  isPro?: boolean;
 }) {
   const p = PRIORITY_META[task.priority];
   return (
     <div
-      className="group flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200"
+      className={`group flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-200${isPro && !task.done ? " hover:shadow-[0_0_12px_rgba(139,92,246,0.35)]" : ""}`}
       style={{
         background: task.done ? "rgba(255,255,255,0.01)" : "rgba(255,255,255,0.03)",
-        borderColor: task.done ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.07)",
+        borderColor: task.done ? "rgba(255,255,255,0.04)" : isPro ? "rgba(139,92,246,0.18)" : "rgba(255,255,255,0.07)",
       }}
     >
       {/* Checkbox */}
