@@ -309,7 +309,10 @@ export default function Home() {
           const res = await fetch("/api/playlists");
           const data = await res.json();
           if (data.playlists) {
-            const saved: Playlist[] = data.playlists;
+            const validDefaultIds = new Set(DEFAULT_PLAYLISTS.map(p => p.id));
+            const saved: Playlist[] = (data.playlists as Playlist[]).filter(
+              p => !p.id.startsWith('subj-') || validDefaultIds.has(p.id)
+            );
             const existingIds = new Set(saved.map((p: Playlist) => p.id));
             const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
             const merged = saved.map((p: Playlist) => {
@@ -328,7 +331,10 @@ export default function Home() {
         const local = localStorage.getItem("studdia_playlists_v1");
         if (local) {
           try {
-            const parsed: Playlist[] = JSON.parse(local);
+            const validDefaultIds = new Set(DEFAULT_PLAYLISTS.map(p => p.id));
+            const parsed: Playlist[] = (JSON.parse(local) as Playlist[]).filter(
+              p => !p.id.startsWith('subj-') || validDefaultIds.has(p.id)
+            );
             const existingIds = new Set(parsed.map((p: Playlist) => p.id));
             const missing = DEFAULT_PLAYLISTS.filter(p => !existingIds.has(p.id));
             const merged = parsed.map((p: Playlist) => {
