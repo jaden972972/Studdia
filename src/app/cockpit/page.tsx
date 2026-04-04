@@ -6,6 +6,7 @@ import { useSession, signOut } from "next-auth/react";
 import { useSubscription } from "@/hooks/useSubscription";
 import ProModal from "@/app/components/ProModal";
 import Onboarding from "@/app/components/Onboarding";
+import ProBadge from "@/app/components/ProBadge";
 import { LEAGUE_META } from "@/lib/subscription";
 import { useTimer, TIMER_MODES, type TimerMode, useTheme } from "@/app/providers";
 
@@ -672,7 +673,12 @@ export default function Home() {
                   )}
                 </div>
               )}
-              <span className="text-[10px] text-gray-500 truncate flex-1">{session.user.name}</span>
+              <ProBadge
+                name={session.user.name ?? ""}
+                isPro={isPro}
+                legendBadge={legendBadge}
+                className="text-[10px] text-gray-500 truncate flex-1"
+              />
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 title="Sign out"
