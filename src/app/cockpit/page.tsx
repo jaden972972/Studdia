@@ -2,6 +2,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { useSubscription } from "@/hooks/useSubscription";
+import ProModal from "@/app/components/ProModal";
 
 const MODES = {
   FOCUS: { label: "Focus", minutes: 25, color: "#8b5cf6" },
@@ -62,10 +64,12 @@ const DEFAULT_PLAYLISTS: Playlist[] = [...SUBJECT_PLAYLISTS];
 
 export default function Home() {
   const { data: session } = useSession();
+  const { isPro, limits } = useSubscription();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
   const [showResetPlaylists, setShowResetPlaylists] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
 
   const [videoId, setVideoId] = useState("ZbQh1ZPG5pc");
   const [input, setInput] = useState("");
@@ -96,6 +100,10 @@ export default function Home() {
 
   // Derive active tracks from current active playlist
   const activeTracks = playlists.find(p => p.id === activePlaylistId)?.tracks ?? [];
+
+  // Subscription-gated playlist creation
+  const customPlaylists = playlists.filter(p => !p.id.startsWith("subj-"));
+  const playlistLimitReached = !isPro && limits.maxCustomPlaylists !== null && customPlaylists.length >= limits.maxCustomPlaylists;
 
   useEffect(() => { loopRef.current = loopPlaylist; }, [loopPlaylist]);
   useEffect(() => { activeTracksRef.current = activeTracks; }, [activeTracks]);
@@ -406,11 +414,21 @@ export default function Home() {
                   <path d="M7 22l-4-4 4-4"/><path d="M21 13v2a4 4 0 01-4 4H3"/>
                 </svg>
               </button>
-              <button onClick={() => setShowNewPlaylist(v => !v)} title="New playlist"
-                className="p-1.5 rounded-lg transition-colors text-gray-600 hover:text-white hover:bg-white/[0.05]">
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 5v14M5 12h14"/>
-                </svg>
+              <button
+                onClick={() => playlistLimitReached ? setShowProModal(true) : setShowNewPlaylist(v => !v)}
+                title={playlistLimitReached ? "Upgrade to Pro for unlimited playlists" : "New playlist"}
+                className="p-1.5 rounded-lg transition-colors hover:bg-white/[0.05]"
+                style={playlistLimitReached ? { color: "#8b5cf6" } : { color: "#4b5563" }}>
+                {playlistLimitReached ? (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                  </svg>
+                ) : (
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 5v14M5 12h14"/>
+                  </svg>
+                )}
               </button>
             </div>
           </div>
@@ -833,6 +851,9 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* ── PRO MODAL ── */}
+      <ProModal open={showProModal} onClose={() => setShowProModal(false)} />
 
       {/* ── ABOUT MODAL ── */}
       {showAbout && (

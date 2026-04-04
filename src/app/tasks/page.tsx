@@ -2,6 +2,11 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
+import { addTask as addTaskAction } from "@/app/actions/tasks";
+import { useSubscription } from "@/hooks/useSubscription";
+import { PLAN_LIMITS } from "@/lib/subscription";
+import ProModal from "@/app/components/ProModal";
+import PremiumPlant from "@/app/components/PremiumPlant";
 
 type Priority = "high" | "medium" | "low";
 type Filter = "all" | "active" | "done";
@@ -39,12 +44,15 @@ function saveTasks(tasks: Task[]) {
 
 export default function TasksPage() {
   const { data: session } = useSession();
+  const { isPro, limits, loading: subLoading } = useSubscription();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [input, setInput] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
   const [showDone, setShowDone] = useState(true);
+  const [showProModal, setShowProModal] = useState(false);
+  const [addingTask, setAddingTask] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const initialized = useRef(false);
   const sessionRef = useRef(session);
@@ -82,7 +90,7 @@ export default function TasksPage() {
     load();
   }, [session]);
 
-  // Save: always localStorage + Supabase (debounced) when logged in
+  // Save toggle/delete changes: localStorage always + Supabase debounced when logged in
   useEffect(() => {
     if (!initialized.current) return;
     saveTasks(tasks);
@@ -101,13 +109,40 @@ export default function TasksPage() {
     };
   }, [tasks]);
 
-  const add = () => {
+  const add = async () => {
     const text = input.trim();
-    if (!text) return;
-    setTasks((prev) => [
-      { id: Date.now().toString(), text, done: false, priority, createdAt: Date.now() },
-      ...prev,
-    ]);
+    if (!text || addingTask) return;
+
+    const newTask: Task = {
+      id: Date.now().toString(),
+      text,
+      done: false,
+      priority,
+      createdAt: Date.now(),
+    };
+
+    if (session?.user) {
+      // Server Action path: limit enforced server-side
+      setAddingTask(true);
+      const result = await addTaskAction(newTask);
+      setAddingTask(false);
+      if ("error" in result) {
+        if (result.error === "LIMIT_REACHED") setShowProModal(true);
+        return;
+      }
+      // Server returned updated array → sync local state + localStorage
+      setTasks(result.tasks);
+      saveTasks(result.tasks);
+    } else {
+      // Guest path: enforce limit locally
+      const localLimit = PLAN_LIMITS.free.maxTasks!;
+      if (tasks.length >= localLimit) {
+        setShowProModal(true);
+        return;
+      }
+      setTasks((prev) => [newTask, ...prev]);
+    }
+
     setInput("");
     inputRef.current?.focus();
   };
@@ -128,6 +163,9 @@ export default function TasksPage() {
   const highPending = tasks.filter((t) => !t.done && t.priority === "high").length;
   const progress = total === 0 ? 0 : Math.round((done / total) * 100);
 
+  const maxTasks = limits.maxTasks;
+  const atLimit = !isPro && maxTasks !== null && tasks.length >= maxTasks;
+
   // Filtered list
   const visible = tasks.filter((t) => {
     const matchFilter =
@@ -141,6 +179,7 @@ export default function TasksPage() {
 
   return (
     <main className="min-h-screen bg-[#080808] text-white font-sans flex flex-col">
+      <ProModal open={showProModal} onClose={() => setShowProModal(false)} />
       {/* ── HEADER ── */}
       <header className="shrink-0 flex items-center justify-between px-6 md:px-10 py-4 border-b border-white/[0.05] bg-black/30 backdrop-blur-sm">
         <div className="flex items-center gap-3">
@@ -179,9 +218,32 @@ export default function TasksPage() {
       <div className="flex-1 max-w-2xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
 
         {/* ── PAGE TITLE ── */}
-        <div>
-          <h1 className="text-2xl font-black tracking-tight">Task Dashboard</h1>
-          <p className="text-gray-600 text-sm mt-0.5">Stay disciplined. One task at a time.</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <h1 className="text-2xl font-black tracking-tight">Task Dashboard</h1>
+            <p className="text-gray-600 text-sm mt-0.5">Stay disciplined. One task at a time.</p>
+          </div>
+          <div className="flex items-center gap-2">
+            {isPro && !subLoading && (
+              <>
+                <PremiumPlant />
+                <span
+                  className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border"
+                  style={{ color: "#a78bfa", background: "rgba(139,92,246,0.1)", borderColor: "rgba(139,92,246,0.3)" }}
+                >
+                  Pro
+                </span>
+              </>
+            )}
+            {!isPro && !subLoading && (
+              <button
+                onClick={() => setShowProModal(true)}
+                className="text-[10px] font-bold text-gray-600 hover:text-violet-400 transition-colors px-2.5 py-1 rounded-lg border border-white/[0.06] hover:border-violet-500/30"
+              >
+                Upgrade →
+              </button>
+            )}
+          </div>
         </div>
 
         {/* ── STATS ROW ── */}
@@ -227,23 +289,43 @@ export default function TasksPage() {
 
         {/* ── ADD TASK FORM ── */}
         <div className="flex flex-col gap-2 p-4 rounded-2xl border border-white/[0.07] bg-white/[0.02]">
+          {/* Limit bar for free users */}
+          {!isPro && maxTasks !== null && (
+            <div className="flex items-center justify-between mb-1">
+              <span className="text-[10px] text-gray-600">
+                {tasks.length} / {maxTasks} tasks
+                {atLimit && (
+                  <span className="ml-2 text-red-400 font-bold">· Limit reached</span>
+                )}
+              </span>
+              {atLimit && (
+                <button
+                  onClick={() => setShowProModal(true)}
+                  className="text-[10px] font-black text-violet-400 hover:text-violet-300 transition-colors"
+                >
+                  Get Pro →
+                </button>
+              )}
+            </div>
+          )}
           <div className="flex gap-2">
             <input
               ref={inputRef}
               type="text"
-              placeholder="New task..."
-              className="flex-1 bg-black/40 border border-white/[0.07] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none focus:border-violet-500/40 transition-colors"
+              placeholder={atLimit ? "Upgrade to Pro for unlimited tasks..." : "New task..."}
+              disabled={atLimit}
+              className="flex-1 bg-black/40 border border-white/[0.07] rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-gray-600 outline-none focus:border-violet-500/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && add()}
             />
             <button
-              onClick={add}
-              disabled={!input.trim()}
+              onClick={atLimit ? () => setShowProModal(true) : add}
+              disabled={(!atLimit && !input.trim()) || addingTask}
               className="px-4 py-2.5 rounded-xl text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-30 shrink-0"
-              style={{ background: ACCENT }}
+              style={{ background: atLimit ? "rgba(139,92,246,0.3)" : ACCENT }}
             >
-              Add
+              {addingTask ? "···" : atLimit ? "🔒" : "Add"}
             </button>
           </div>
           {/* Priority selector */}
@@ -252,7 +334,8 @@ export default function TasksPage() {
               <button
                 key={p}
                 onClick={() => setPriority(p)}
-                className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border"
+                disabled={atLimit}
+                className="flex-1 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-wide transition-all border disabled:opacity-30"
                 style={
                   priority === p
                     ? { background: PRIORITY_META[p].bg, color: PRIORITY_META[p].color, borderColor: PRIORITY_META[p].border }
