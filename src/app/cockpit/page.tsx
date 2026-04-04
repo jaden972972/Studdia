@@ -14,6 +14,7 @@ const MODES = {
 type Mode = keyof typeof MODES;
 type Track = { id: string; title: string };
 type Playlist = { id: string; name: string; tracks: Track[] };
+type LeagueEntry = { display_name: string; sessions_week: number; sessions_total: number; isMe: boolean };
 
 const SUBJECT_PLAYLISTS: Playlist[] = [
   { id: "subj-music", name: "Music", tracks: [
@@ -100,11 +101,25 @@ export default function Home() {
   useEffect(() => { trackIdxRef.current = currentTrackIdx; }, [currentTrackIdx]);
 
   const [mode, setMode] = useState<Mode>("FOCUS");
-  const [seconds, setSeconds] = useState(MODES.FOCUS.minutes * 60);
   const [isActive, setIsActive] = useState(false);
   const [sessions, setSessions] = useState(0);
+  const [customFocusMin, setCustomFocusMin] = useState<number>(() => {
+    if (typeof window === "undefined") return 25;
+    const saved = localStorage.getItem("studdia_focus_min");
+    return saved ? Math.max(5, Math.min(120, Number(saved))) : 25;
+  });
+  const [showLeague, setShowLeague] = useState(false);
+  const [leagueData, setLeagueData] = useState<LeagueEntry[]>([]);
+  const [leaguePeriod, setLeaguePeriod] = useState<"week" | "total">("week");
+  const [leagueLoading, setLeagueLoading] = useState(false);
 
-  const totalSeconds = MODES[mode].minutes * 60;
+  const effectiveFocusMin = isPro ? customFocusMin : 25;
+  const effectiveFocusMinRef = useRef(effectiveFocusMin);
+  useEffect(() => { effectiveFocusMinRef.current = effectiveFocusMin; }, [effectiveFocusMin]);
+
+  const [seconds, setSeconds] = useState(MODES.FOCUS.minutes * 60);
+
+  const totalSeconds = mode === "FOCUS" ? effectiveFocusMin * 60 : MODES[mode].minutes * 60;
   const progress = 1 - seconds / totalSeconds;
   const radius = 80;
   const circumference = 2 * Math.PI * radius;
@@ -257,8 +272,26 @@ export default function Home() {
 
   const changeMode = (newMode: Mode) => {
     setMode(newMode);
-    setSeconds(MODES[newMode].minutes * 60);
+    setSeconds(newMode === "FOCUS" ? effectiveFocusMinRef.current * 60 : MODES[newMode].minutes * 60);
     setIsActive(false);
+  };
+
+  const adjustFocus = (delta: number) => {
+    if (isActive) return;
+    const next = Math.min(120, Math.max(5, customFocusMin + delta));
+    setCustomFocusMin(next);
+    if (mode === "FOCUS") setSeconds(next * 60);
+    localStorage.setItem("studdia_focus_min", String(next));
+  };
+
+  const fetchLeague = async (period: "week" | "total" = "week") => {
+    setLeagueLoading(true);
+    try {
+      const res = await fetch(`/api/sessions?period=${period}`);
+      const data = await res.json();
+      setLeagueData(data.leaderboard ?? []);
+    } catch {}
+    setLeagueLoading(false);
   };
 
   useEffect(() => {
@@ -268,7 +301,12 @@ export default function Home() {
       document.title = `(${Math.floor(seconds / 60)}:${(seconds % 60).toString().padStart(2, "0")}) Studdia`;
     } else if (seconds === 0) {
       setIsActive(false);
-      if (mode === "FOCUS") setSessions((s) => s + 1);
+      if (mode === "FOCUS") {
+        setSessions((s) => s + 1);
+        if (effectiveFocusMinRef.current >= 25 && sessionRef.current?.user?.email) {
+          fetch("/api/sessions", { method: "POST" }).catch(() => {});
+        }
+      }
       document.title = "Studdia";
       // Play a soft two-tone chime via Web Audio API
       try {
@@ -657,6 +695,15 @@ export default function Home() {
               <span>{isActive ? "In session" : "Ready"}</span>
               <span className="font-bold text-white ml-1">{sessions} <span className="font-normal text-gray-600">sessions</span></span>
             </div>
+            <button
+              onClick={() => { setShowLeague(true); fetchLeague(leaguePeriod); }}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold text-gray-400 hover:text-amber-400 hover:bg-amber-400/5 border border-white/[0.07] hover:border-amber-400/20 transition-all">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M6 9H4a2 2 0 00-2 2v1a2 2 0 002 2h2M18 9h2a2 2 0 012 2v1a2 2 0 01-2 2h-2"/>
+                <path d="M6 9v8a6 6 0 0012 0V9M6 9H18M8 9V5h8v4"/>
+              </svg>
+              League
+            </button>
             <Link href="/tasks"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold text-gray-400 hover:text-violet-400 hover:bg-violet-400/5 border border-white/[0.07] hover:border-violet-400/20 transition-all">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
@@ -725,6 +772,25 @@ export default function Home() {
                   </button>
                 ))}
               </div>
+
+              {/* Pro: custom focus duration */}
+              {isPro && (
+                <div className="flex items-center gap-3 mb-5">
+                  <button onClick={() => adjustFocus(-5)} disabled={isActive || customFocusMin <= 5}
+                    className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.07] text-gray-400 hover:text-white hover:bg-white/[0.08] flex items-center justify-center text-lg font-bold transition-all disabled:opacity-30 shrink-0">−</button>
+                  <div className="text-center flex-1">
+                    <div>
+                      <span className="text-sm font-black tabular-nums" style={{ color: accent }}>{effectiveFocusMin}</span>
+                      <span className="text-[10px] text-gray-500 ml-1">min focus</span>
+                    </div>
+                    {effectiveFocusMin < 25 && (
+                      <p className="text-[9px] mt-0.5 font-semibold" style={{ color: "#f59e0b" }}>won&apos;t count in league</p>
+                    )}
+                  </div>
+                  <button onClick={() => adjustFocus(+5)} disabled={isActive || customFocusMin >= 120}
+                    className="w-8 h-8 rounded-xl bg-white/[0.04] border border-white/[0.07] text-gray-400 hover:text-white hover:bg-white/[0.08] flex items-center justify-center text-lg font-bold transition-all disabled:opacity-30 shrink-0">+</button>
+                </div>
+              )}
 
               {/* Circular ring */}
               <div className="relative flex items-center justify-center mb-7">
@@ -951,6 +1017,61 @@ export default function Home() {
 
       {/* ── PRO MODAL ── */}
       <ProModal open={showProModal} onClose={() => setShowProModal(false)} />
+
+      {/* ── LEAGUE MODAL ── */}
+      {showLeague && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xl"
+          onClick={() => setShowLeague(false)}>
+          <div className="bg-[#0d0d0f] border border-white/[0.08] rounded-3xl w-full max-w-sm shadow-2xl"
+            onClick={e => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/[0.06]">
+              <div className="flex items-center gap-2">
+                <span className="text-base">🏆</span>
+                <h2 className="font-black text-base">Weekly League</h2>
+              </div>
+              <div className="flex gap-0.5 p-0.5 bg-black/40 rounded-full border border-white/[0.06]">
+                {(["week", "total"] as const).map(p => (
+                  <button key={p} onClick={() => { setLeaguePeriod(p); fetchLeague(p); }}
+                    className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all"
+                    style={leaguePeriod === p ? { background: accent, color: "white" } : { color: "#555" }}>
+                    {p === "week" ? "This Week" : "All Time"}
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setShowLeague(false)}
+                className="p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-white/[0.05] transition-colors">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div className="px-4 py-3 space-y-1.5 max-h-80 overflow-y-auto">
+              {leagueLoading ? (
+                <div className="text-center py-10 text-gray-600 text-sm">Loading...</div>
+              ) : leagueData.length === 0 ? (
+                <div className="text-center py-10 text-gray-600 text-sm">No data yet.<br/>Complete sessions to appear here!</div>
+              ) : leagueData.map((entry, i) => (
+                <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
+                  style={entry.isMe
+                    ? { background: `${accent}15`, border: `1px solid ${accent}30` }
+                    : { background: "rgba(255,255,255,0.02)", border: "1px solid transparent" }}>
+                  <span className="w-7 text-center text-sm font-black shrink-0"
+                    style={{ color: i === 0 ? "#f59e0b" : i === 1 ? "#9ca3af" : i === 2 ? "#cd7c2f" : "#444" }}>
+                    {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
+                  </span>
+                  <span className="flex-1 text-sm font-semibold truncate"
+                    style={{ color: entry.isMe ? accent : "white" }}>
+                    {entry.display_name}{entry.isMe && " (you)"}
+                  </span>
+                  <span className="text-sm font-black tabular-nums" style={{ color: entry.isMe ? accent : "#ccc" }}>
+                    {leaguePeriod === "week" ? entry.sessions_week : entry.sessions_total}
+                  </span>
+                  <span className="text-[10px] text-gray-600 shrink-0">sess.</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-center text-[10px] text-gray-600 pb-4 pt-1">Resets every Monday · min. 25 min focus to count</p>
+          </div>
+        </div>
+      )}
 
       {/* ── ABOUT MODAL ── */}
       {showAbout && (
