@@ -39,6 +39,11 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+[data-theme="light"] .pro-badge-anim {
+  -webkit-text-fill-color: #7c3aed;
+  background: none;
+  color: #7c3aed;
+}
 
 @keyframes skeleton-shimmer {
   0%   { background-position: -200% 0; }
