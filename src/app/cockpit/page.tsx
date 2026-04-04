@@ -735,10 +735,16 @@ export default function Home() {
               </div>
             )}
             {isPro && (
-              <span
-                className="hidden sm:inline text-[9px] font-black uppercase tracking-[0.18em] px-2 py-0.5 rounded-md pro-badge-anim"
-                style={{ background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.4)", color: "#a78bfa" }}>
-                Pro
+              <span className="hidden sm:inline-flex items-center gap-1 relative select-none shrink-0">
+                {/* Invisible clipboard text */}
+                <span
+                  aria-hidden="true"
+                  style={{ fontSize: 0, opacity: 0, position: "absolute", userSelect: "all", pointerEvents: "none" }}
+                >
+                  {legendBadge ? "[LEYENDA]" : "[PRO]"}
+                </span>
+                {/* ∞ icon — magenta neon */}
+                <LogoStuddia size={30} glowIntensity="strong" />
               </span>
             )}
           </div>
@@ -1038,7 +1044,7 @@ export default function Home() {
                     {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
                   </span>
                   <span className="flex-1 text-sm font-semibold truncate"
-                    style={{ color: entry.isMe ? LEAGUE_META[leagueTierView].color : "white" }}>
+                    style={{ color: entry.isMe ? LEAGUE_META[leagueTierView].color : "var(--text-main)" }}>
                     {entry.display_name}{entry.isMe && " (tú)"}
                   </span>
                   {entry.streak > 0 && (
@@ -1046,7 +1052,7 @@ export default function Home() {
                       🔥{entry.streak}
                     </span>
                   )}
-                  <span className="text-sm font-black tabular-nums" style={{ color: entry.isMe ? LEAGUE_META[leagueTierView].color : "#ccc" }}>
+                  <span className="text-sm font-black tabular-nums" style={{ color: entry.isMe ? LEAGUE_META[leagueTierView].color : "var(--text-secondary)" }}>
                     {leaguePeriod === "week" ? entry.sessions_week : entry.sessions_total}
                   </span>
                   <span className="text-[10px] text-gray-600 shrink-0">ses.</span>

@@ -1,8 +1,21 @@
 @import "tailwindcss";
 
+/* ── Theme tokens ─────────────────────────────────────────────── */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Dark by default — overridden below for light */
+  --text-main:      #ffffff;
+  --text-secondary: #cccccc;
+  --bg-main:        #000000;
+  --bg-surface:     #0d0d0f;
+}
+
+[data-theme="light"] {
+  --text-main:      #1a1a1a;
+  --text-secondary: #555555;
+  --bg-main:        #ffffff;
+  --bg-surface:     #f7f7f5;
 }
 
 @theme inline {
