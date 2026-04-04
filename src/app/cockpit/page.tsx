@@ -96,6 +96,7 @@ export default function Home() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initializedRef = useRef(false);
   const sessionRef = useRef(session);
+  const positionSaveRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => { sessionRef.current = session; }, [session]);
 
   // Derive active tracks from current active playlist
@@ -120,6 +121,28 @@ export default function Home() {
   const circumference = 2 * Math.PI * radius;
   const accent = MODES[mode].color;
 
+  // ── Video position persistence ──
+  const POSITION_KEY = "studdia_video_pos";
+  const savePosition = () => {
+    try {
+      const time = playerRef.current?.getCurrentTime?.();
+      const id = playerRef.current?.getVideoData?.()?.video_id;
+      if (id && typeof time === "number" && time > 2) {
+        localStorage.setItem(POSITION_KEY, JSON.stringify({ id, time }));
+      }
+    } catch {}
+  };
+  const restorePosition = (targetId: string) => {
+    try {
+      const raw = localStorage.getItem(POSITION_KEY);
+      if (!raw) return;
+      const { id, time } = JSON.parse(raw) as { id: string; time: number };
+      if (id === targetId && time > 2) {
+        playerRef.current?.seekTo?.(time, true);
+      }
+    } catch {}
+  };
+
   // ── YT IFrame API ──
   const initPlayer = () => {
     if (!document.getElementById("yt-player")) return;
@@ -127,7 +150,21 @@ export default function Home() {
       videoId,
       playerVars: { autoplay: 1, modestbranding: 1, rel: 0 },
       events: {
+        onReady: () => {
+          restorePosition(videoId);
+        },
         onStateChange: (e: any) => {
+          // YT.PlayerState.PLAYING = 1
+          if (e.data === 1) {
+            if (!positionSaveRef.current) {
+              positionSaveRef.current = setInterval(savePosition, 5000);
+            }
+          } else {
+            if (positionSaveRef.current) {
+              clearInterval(positionSaveRef.current);
+              positionSaveRef.current = null;
+            }
+          }
           if (e.data === 0 && loopRef.current) {
             const tracks = activeTracksRef.current;
             if (tracks.length === 0) return;
@@ -152,7 +189,11 @@ export default function Home() {
       }
       (window as any).onYouTubeIframeAPIReady = initPlayer;
     }
-    return () => { playerRef.current?.destroy?.(); };
+    return () => {
+      savePosition();
+      if (positionSaveRef.current) clearInterval(positionSaveRef.current);
+      playerRef.current?.destroy?.();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -160,6 +201,8 @@ export default function Home() {
   useEffect(() => {
     if (playerRef.current?.loadVideoById) {
       playerRef.current.loadVideoById(videoId);
+      // Small delay to let the player load before seeking
+      setTimeout(() => restorePosition(videoId), 1200);
     }
   }, [videoId]);
 
