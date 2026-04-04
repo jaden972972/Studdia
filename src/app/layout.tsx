@@ -36,6 +36,22 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      {/* Blocking script: applies theme before first paint — fixes mobile flash */}
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function(){
+            try {
+              var t = localStorage.getItem('studdia_theme');
+              if (!t) {
+                t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+              }
+              document.documentElement.setAttribute('data-theme', t);
+            } catch(e) {
+              document.documentElement.setAttribute('data-theme', 'dark');
+            }
+          })();
+        `}} />
+      </head>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
       </body>

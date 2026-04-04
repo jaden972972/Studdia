@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { type Subscription, FREE_SUBSCRIPTION, PLAN_LIMITS } from "@/lib/subscription";
+import { type Subscription, FREE_SUBSCRIPTION, PLAN_LIMITS, type LeagueTier } from "@/lib/subscription";
 
 export function useSubscription(): Subscription & { loading: boolean } {
   const { data: session } = useSession();
@@ -21,7 +21,14 @@ export function useSubscription(): Subscription & { loading: boolean } {
       .then((data) => {
         if (cancelled) return;
         const planType = data.planType === "pro" ? "pro" : "free";
-        setSub({ planType, isPro: planType === "pro", limits: PLAN_LIMITS[planType] });
+        const leagueTier = (data.leagueTier ?? "novato") as LeagueTier;
+        setSub({
+          planType,
+          isPro: planType === "pro",
+          limits: PLAN_LIMITS[planType],
+          leagueTier,
+          legendBadge: data.legendBadge ?? false,
+        });
       })
       .catch(() => { if (!cancelled) setSub(FREE_SUBSCRIPTION); })
       .finally(() => { if (!cancelled) setLoading(false); });

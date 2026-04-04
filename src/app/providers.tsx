@@ -9,9 +9,12 @@ const ThemeContext = createContext<ThemeContextValue>({ theme: "dark", toggleThe
 export function useTheme() { return useContext(ThemeContext); }
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<"dark" | "light">(() =>
-    typeof window !== "undefined" ? ((localStorage.getItem("studdia_theme") as "dark" | "light") ?? "dark") : "dark"
-  );
+  const [theme, setTheme] = useState<"dark" | "light">(() => {
+    if (typeof window === "undefined") return "dark";
+    // Read from the attribute already set by the blocking script
+    const attr = document.documentElement.getAttribute("data-theme") as "dark" | "light" | null;
+    return attr ?? (localStorage.getItem("studdia_theme") as "dark" | "light") ?? "dark";
+  });
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("studdia_theme", theme);

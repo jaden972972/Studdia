@@ -5,11 +5,13 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useSubscription } from "@/hooks/useSubscription";
 import ProModal from "@/app/components/ProModal";
+import Onboarding from "@/app/components/Onboarding";
+import { LEAGUE_META } from "@/lib/subscription";
 import { useTimer, TIMER_MODES, type TimerMode, useTheme } from "@/app/providers";
 
 type Track = { id: string; title: string };
 type Playlist = { id: string; name: string; tracks: Track[] };
-type LeagueEntry = { display_name: string; sessions_week: number; sessions_total: number; isMe: boolean };
+type LeagueEntry = { display_name: string; sessions_week: number; sessions_total: number; streak: number; isMe: boolean };
 
 const SUBJECT_PLAYLISTS: Playlist[] = [
   { id: "subj-music", name: "Music", tracks: [
@@ -37,12 +39,14 @@ const DEFAULT_PLAYLISTS: Playlist[] = [...SUBJECT_PLAYLISTS];
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const { isPro, limits } = useSubscription();
+  const { isPro, limits, leagueTier, legendBadge } = useSubscription();
   const { muted, toggleMuted } = useTimer();
   const { toggleTheme, theme } = useTheme();
   const isDark = theme === "dark";
+  const leagueMeta = LEAGUE_META[leagueTier];
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
   const [showTasksPopup, setShowTasksPopup] = useState(false);
   const [popupTasks, setPopupTasks] = useState<{id:string;text:string;done:boolean;priority:"high"|"medium"|"low"}[]>([]);
   const [showAbout, setShowAbout] = useState(false);
@@ -133,6 +137,7 @@ export default function Home() {
   const [showLeague, setShowLeague] = useState(false);
   const [leagueData, setLeagueData] = useState<LeagueEntry[]>([]);
   const [leaguePeriod, setLeaguePeriod] = useState<"week" | "total">("week");
+  const [leagueTierView, setLeagueTierView] = useState<"novato" | "aficionado" | "elite">("novato");
   const [leagueLoading, setLeagueLoading] = useState(false);
 
   const totalSeconds = mode === "FOCUS" ? effectiveFocusMin * 60 : TIMER_MODES[mode].minutes * 60;
@@ -287,10 +292,10 @@ export default function Home() {
     setSidebarOpen(false);
   };
 
-  const fetchLeague = async (period: "week" | "total" = "week") => {
+  const fetchLeague = async (period: "week" | "total" = "week", tier: "novato" | "aficionado" | "elite" = leagueTierView) => {
     setLeagueLoading(true);
     try {
-      const res = await fetch(`/api/sessions?period=${period}`);
+      const res = await fetch(`/api/leagues?tier=${tier}&period=${period}`);
       const data = await res.json();
       setLeagueData(data.leaderboard ?? []);
     } catch {}
@@ -408,6 +413,9 @@ export default function Home() {
         ? { background: "radial-gradient(ellipse at 30% 50%, #0e0a1a 0%, #080808 60%, #000 100%)", color: "white" }
         : { background: isDark ? "#080808" : "#f0efe9", color: isDark ? "white" : "#111" }}>
 
+      {/* ── ONBOARDING ── */}
+      <Onboarding />
+
       {/* ── TASKS SIDE DRAWER ── */}
       {showTasksPopup && (
         <div className="fixed inset-0 z-[60] flex justify-end" onClick={() => setShowTasksPopup(false)}>
@@ -497,8 +505,17 @@ export default function Home() {
                     PRO
                   </span>
                 )}
+                {legendBadge && (
+                  <span className="text-[8px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md leading-none"
+                    style={{ border: "1px solid rgba(251,191,36,0.5)", background: "rgba(251,191,36,0.12)", color: "#fbbf24" }}>
+                    LEYENDA
+                  </span>
+                )}
               </div>
-
+              {/* League tier badge */}
+              <span className="text-[9px] font-bold mt-0.5" style={{ color: leagueMeta.color }}>
+                {leagueMeta.emoji} Liga {leagueMeta.label}
+              </span>
             </div>
           </div>
           <button onClick={() => setSidebarOpen(false)} className="p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-white/[0.05] transition-colors md:hidden">
@@ -736,6 +753,9 @@ export default function Home() {
                 <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded-md transition-colors duration-500 hidden sm:inline leading-none"
                   style={{ background: `${accent}22`, color: accent }}>
                   {TIMER_MODES[mode].label}
+                </span>
+                <span className="text-[9px] font-bold hidden sm:inline leading-none" style={{ color: leagueMeta.color }}>
+                  {leagueMeta.emoji} {leagueMeta.label}
                 </span>
               </div>
 
@@ -1113,51 +1133,75 @@ export default function Home() {
           onClick={() => setShowLeague(false)}>
           <div className="bg-[#0d0d0f] border border-white/[0.08] rounded-3xl w-full max-w-sm shadow-2xl"
             onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b border-white/[0.06]">
+            {/* Header row */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2">
                 <span className="text-base">🏆</span>
-                <h2 className="font-black text-base">Liga Semanal</h2>
-              </div>
-              <div className="flex gap-0.5 p-0.5 bg-black/40 rounded-full border border-white/[0.06]">
-                {(["week", "total"] as const).map(p => (
-                  <button key={p} onClick={() => { setLeaguePeriod(p); fetchLeague(p); }}
-                    className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all"
-                    style={leaguePeriod === p ? { background: accent, color: "white" } : { color: "#555" }}>
-                    {p === "week" ? "Esta semana" : "Total"}
-                  </button>
-                ))}
+                <h2 className="font-black text-base">Ligas</h2>
               </div>
               <button onClick={() => setShowLeague(false)}
                 className="p-1.5 rounded-lg text-gray-600 hover:text-white hover:bg-white/[0.05] transition-colors">
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>
-            <div className="px-4 py-3 space-y-1.5 max-h-80 overflow-y-auto">
+            {/* Tier tabs */}
+            <div className="flex gap-1 px-5 pt-4 pb-2">
+              {(["novato", "aficionado", "elite"] as const).map(t => (
+                <button key={t}
+                  onClick={() => { setLeagueTierView(t); fetchLeague(leaguePeriod, t); }}
+                  className="flex-1 flex items-center justify-center gap-1 py-1.5 rounded-xl text-[11px] font-black uppercase tracking-wide transition-all border"
+                  style={leagueTierView === t
+                    ? { background: `${LEAGUE_META[t].color}22`, border: `1px solid ${LEAGUE_META[t].color}55`, color: LEAGUE_META[t].color }
+                    : { background: "transparent", border: "1px solid transparent", color: "#444" }}>
+                  <span>{LEAGUE_META[t].emoji}</span>
+                  <span className="hidden sm:inline">{LEAGUE_META[t].label}</span>
+                </button>
+              ))}
+            </div>
+            {/* Week / Total toggle */}
+            <div className="flex justify-end px-5 pb-3">
+              <div className="flex gap-0.5 p-0.5 bg-black/40 rounded-full border border-white/[0.06]">
+                {(["week", "total"] as const).map(p => (
+                  <button key={p} onClick={() => { setLeaguePeriod(p); fetchLeague(p, leagueTierView); }}
+                    className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider transition-all"
+                    style={leaguePeriod === p ? { background: LEAGUE_META[leagueTierView].color, color: "white" } : { color: "#555" }}>
+                    {p === "week" ? "Esta semana" : "Total"}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Leaderboard rows */}
+            <div className="px-4 pb-3 space-y-1.5 max-h-72 overflow-y-auto">
               {leagueLoading ? (
                 <div className="text-center py-10 text-gray-600 text-sm">Cargando...</div>
               ) : leagueData.length === 0 ? (
-                <div className="text-center py-10 text-gray-600 text-sm">Sin datos aún.<br/>¡Completa sesiones para aparecer!</div>
+                <div className="text-center py-10 text-gray-600 text-sm">Sin datos en esta liga.<br/>¡Completa sesiones para aparecer!</div>
               ) : leagueData.map((entry, i) => (
                 <div key={i} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
                   style={entry.isMe
-                    ? { background: `${accent}15`, border: `1px solid ${accent}30` }
+                    ? { background: `${LEAGUE_META[leagueTierView].color}15`, border: `1px solid ${LEAGUE_META[leagueTierView].color}30` }
                     : { background: "rgba(255,255,255,0.02)", border: "1px solid transparent" }}>
                   <span className="w-7 text-center text-sm font-black shrink-0"
                     style={{ color: i === 0 ? "#f59e0b" : i === 1 ? "#9ca3af" : i === 2 ? "#cd7c2f" : "#444" }}>
                     {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : `#${i + 1}`}
                   </span>
                   <span className="flex-1 text-sm font-semibold truncate"
-                    style={{ color: entry.isMe ? accent : "white" }}>
+                    style={{ color: entry.isMe ? LEAGUE_META[leagueTierView].color : "white" }}>
                     {entry.display_name}{entry.isMe && " (tú)"}
                   </span>
-                  <span className="text-sm font-black tabular-nums" style={{ color: entry.isMe ? accent : "#ccc" }}>
+                  {entry.streak > 0 && (
+                    <span className="text-[11px] tabular-nums" style={{ color: "#f97316" }}>
+                      🔥{entry.streak}
+                    </span>
+                  )}
+                  <span className="text-sm font-black tabular-nums" style={{ color: entry.isMe ? LEAGUE_META[leagueTierView].color : "#ccc" }}>
                     {leaguePeriod === "week" ? entry.sessions_week : entry.sessions_total}
                   </span>
                   <span className="text-[10px] text-gray-600 shrink-0">ses.</span>
                 </div>
               ))}
             </div>
-            <p className="text-center text-[10px] text-gray-600 pb-4 pt-1">Se reinicia cada lunes · mín. 25 min de enfoque para contar</p>
+            <p className="text-center text-[10px] text-gray-600 pb-4 pt-1">Top 3 ascienden cada lunes · mín. 25 min de enfoque</p>
           </div>
         </div>
       )}
