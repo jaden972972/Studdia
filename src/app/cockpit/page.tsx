@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useSubscription } from "@/hooks/useSubscription";
 import ProModal from "@/app/components/ProModal";
-import Onboarding from "@/app/components/Onboarding";
 import ProBadge from "@/app/components/ProBadge";
 import { LEAGUE_META } from "@/lib/subscription";
 import { useTimer, TIMER_MODES, type TimerMode, useTheme } from "@/app/providers";
@@ -47,34 +46,7 @@ export default function Home() {
   const leagueMeta = LEAGUE_META[leagueTier];
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showTasksPopup, setShowTasksPopup] = useState(false);
-  const [popupTasks, setPopupTasks] = useState<{id:string;text:string;done:boolean;priority:"high"|"medium"|"low"}[]>([]);
-  const [showAbout, setShowAbout] = useState(false);
-  const [showDeleteAccount, setShowDeleteAccount] = useState(false);
-  const [showResetPlaylists, setShowResetPlaylists] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
-
-  const openTasksPopup = () => {
-    try {
-      const raw = localStorage.getItem("studdia_tasks_v1");
-      const all = raw ? JSON.parse(raw) : [];
-      const ordered = [
-        ...(["high","medium","low"] as const).flatMap(p => all.filter((t: any) => !t.done && t.priority === p)),
-        ...all.filter((t: any) => t.done),
-      ];
-      setPopupTasks(ordered);
-    } catch { setPopupTasks([]); }
-    setShowTasksPopup(true);
-  };
-  const togglePopupTask = (id: string) => {
-    setPopupTasks(prev => prev.map(t => t.id === id ? {...t, done: !t.done} : t));
-    try {
-      const raw = localStorage.getItem("studdia_tasks_v1");
-      const all = raw ? JSON.parse(raw) : [];
-      localStorage.setItem("studdia_tasks_v1", JSON.stringify(all.map((t: any) => t.id === id ? {...t, done: !t.done} : t)));
-    } catch {}
-  };
 
   const [videoId, setVideoId] = useState(() => {
     if (typeof window === "undefined") return "ZbQh1ZPG5pc";
@@ -414,53 +386,6 @@ export default function Home() {
         ? { background: "radial-gradient(ellipse at 30% 50%, #0e0a1a 0%, #080808 60%, #000 100%)", color: "white" }
         : { background: isDark ? "#080808" : "#f0efe9", color: isDark ? "white" : "#111" }}>
 
-      {/* ── ONBOARDING ── */}
-      <Onboarding />
-
-      {/* ── TASKS SIDE DRAWER ── */}
-      {showTasksPopup && (
-        <div className="fixed inset-0 z-[60] flex justify-end" onClick={() => setShowTasksPopup(false)}>
-          <div className="h-full w-full max-w-[300px] border-l bg-[#0d0d0f] p-5 flex flex-col gap-3 overflow-y-auto"
-            style={{ borderColor: "rgba(255,255,255,0.08)", boxShadow: "-20px 0 60px rgba(0,0,0,0.7)", animation: "slideInRight 0.2s ease" }}
-            onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-500">Tareas pendientes</span>
-              <button onClick={() => setShowTasksPopup(false)} className="text-gray-600 hover:text-white transition-colors">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              </button>
-            </div>
-            <div className="overflow-y-auto flex flex-col gap-1.5 [scrollbar-width:none]">
-              {popupTasks.length === 0 && (
-                <div className="flex flex-col items-center gap-3 py-8 text-center">
-                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#333" strokeWidth="1.5"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-                  <p className="text-xs text-gray-600">Aún no tienes tareas.<br/>Créalas en la página de Tareas.</p>
-                  <Link href="/tasks" onClick={() => setShowTasksPopup(false)}
-                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-bold text-violet-400 border border-violet-400/30 hover:bg-violet-400/10 transition-all">
-                    Ir a Tareas →
-                  </Link>
-                </div>
-              )}
-              {popupTasks.map((t) => {
-                const colors: Record<string,string> = { high:"#f87171", medium:"#fbbf24", low:"#6b7280" };
-                const labels: Record<string,string> = { high:"Alta", medium:"Media", low:"Baja" };
-                return (
-                  <div key={t.id} className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
-                    style={{ background: t.done ? "transparent" : "rgba(255,255,255,0.03)", opacity: t.done ? 0.45 : 1 }}>
-                    <button onClick={() => togglePopupTask(t.id)}
-                      className="w-4 h-4 rounded shrink-0 flex items-center justify-center border-2 transition-all"
-                      style={t.done ? { background:"#10b981", borderColor:"#10b981" } : { background:"transparent", borderColor: colors[t.priority] }}>
-                      {t.done && <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5"><path d="M20 6L9 17l-5-5"/></svg>}
-                    </button>
-                    <span className="flex-1 text-sm truncate" style={{ color: t.done ? "#3f3f46" : "#d4d4d8", textDecoration: t.done ? "line-through" : "none" }}>{t.text}</span>
-                    {!t.done && <span className="text-[9px] font-black uppercase shrink-0" style={{ color: colors[t.priority] }}>{labels[t.priority]}</span>}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── PRO AMBIENT ORBS ── */}
       {isPro && (
         <>
@@ -691,44 +616,19 @@ export default function Home() {
             </div>
           )}
           <div className="flex items-center justify-between">
-            <button onClick={() => { setShowAbout(true); setSidebarOpen(false); }}
-              className="flex items-center gap-2 text-[11px] text-gray-600 hover:text-gray-300 transition-colors">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg>
-              Acerca v9
-            </button>
             <Link href="/" className="flex items-center gap-1.5 text-[11px] text-gray-600 hover:text-gray-300 transition-colors">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
               Inicio
             </Link>
-          </div>
-          <div className="flex items-center gap-2 pt-2 border-t border-white/[0.04] md:hidden">
-            <Link href="/tasks" onClick={() => setSidebarOpen(false)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] text-gray-400 hover:text-violet-400 hover:bg-violet-400/5 border border-white/[0.05] hover:border-violet-400/20 transition-all">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-              Tareas
-            </Link>
+            {/* Liga mobile button */}
             <button onClick={() => { setSidebarOpen(false); setTimeout(() => { setShowLeague(true); fetchLeague(leaguePeriod); }, 10); }}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] text-gray-400 hover:text-amber-400 hover:bg-amber-400/5 border border-white/[0.05] hover:border-amber-400/20 transition-all">
+              className="flex items-center gap-1.5 py-2 px-3 rounded-xl text-[11px] text-gray-400 hover:text-amber-400 hover:bg-amber-400/5 border border-white/[0.05] hover:border-amber-400/20 transition-all md:hidden">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 9H4a2 2 0 00-2 2v1a2 2 0 002 2h2M18 9h2a2 2 0 012 2v1a2 2 0 01-2 2h-2"/>
                 <path d="M6 9v8a6 6 0 0012 0V9M6 9H18M8 9V5h8v4"/>
               </svg>
               Liga
             </button>
-          </div>
-          <div className="flex items-center gap-2 pt-2 border-t border-white/[0.04]">
-            <button onClick={() => setShowResetPlaylists(true)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] text-gray-600 hover:text-yellow-400 hover:bg-yellow-400/5 border border-white/[0.05] hover:border-yellow-400/20 transition-all">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 4v6h6M23 20v-6h-6" /><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" /></svg>
-              Reiniciar listas
-            </button>
-            {session?.user && (
-              <button onClick={() => setShowDeleteAccount(true)}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl text-[11px] text-gray-600 hover:text-red-400 hover:bg-red-400/5 border border-white/[0.05] hover:border-red-400/20 transition-all">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6" /><path d="M10 11v6M14 11v6" /><path d="M9 6V4h6v2" /></svg>
-                Eliminar cuenta
-              </button>
-            )}
           </div>
         </div>
       </aside>
@@ -783,13 +683,6 @@ export default function Home() {
                 <path d="M6 9v8a6 6 0 0012 0V9M6 9H18M8 9V5h8v4"/>
               </svg>
               Liga
-            </button>
-            <button
-              onClick={openTasksPopup}
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold text-gray-400 hover:text-violet-400 hover:bg-violet-400/5 border border-white/[0.07] hover:border-violet-400/20 transition-all"
-              title="Ver tareas">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-              Tareas
             </button>
             <button
               onClick={toggleTheme}
@@ -1077,59 +970,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── RESET PLAYLISTS MODAL ── */}
-      {showResetPlaylists && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-          <div className="bg-[#0d0d0f] border border-white/[0.08] p-7 rounded-3xl max-w-sm w-full shadow-2xl">
-            <h2 className="text-base font-black mb-2">¿Reiniciar listas?</h2>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Se eliminarán todos tus videos guardados y se restaurarán las listas por defecto. Esta acción no se puede deshacer.
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setShowResetPlaylists(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.08] transition-all">
-                Cancelar
-              </button>
-              <button onClick={() => {
-                localStorage.removeItem("studdia_playlists_v1");
-                setPlaylists(DEFAULT_PLAYLISTS);
-                setActivePlaylistId(DEFAULT_PLAYLISTS[0].id);
-                setCurrentTrackIdx(-1);
-                setShowResetPlaylists(false);
-              }}
-                className="flex-1 py-2.5 rounded-xl text-sm font-black bg-yellow-500/20 text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/30 transition-all">
-                Reiniciar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── DELETE ACCOUNT MODAL ── */}
-      {showDeleteAccount && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-          <div className="bg-[#0d0d0f] border border-white/[0.08] p-7 rounded-3xl max-w-sm w-full shadow-2xl">
-            <h2 className="text-base font-black mb-2 text-red-400">¿Eliminar cuenta?</h2>
-            <p className="text-gray-400 text-sm leading-relaxed mb-6">
-              Cerrarás sesión y se eliminarán todos tus datos locales (listas y videos). Para eliminar tu cuenta de Google, visita myaccount.google.com.
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setShowDeleteAccount(false)}
-                className="flex-1 py-2.5 rounded-xl text-sm font-bold bg-white/[0.05] border border-white/[0.08] hover:bg-white/[0.08] transition-all">
-                Cancelar
-              </button>
-              <button onClick={() => {
-                localStorage.removeItem("studdia_playlists_v1");
-                signOut({ callbackUrl: "/" });
-              }}
-                className="flex-1 py-2.5 rounded-xl text-sm font-black bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all">
-                Eliminar y cerrar sesión
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── PRO MODAL ── */}
       <ProModal open={showProModal} onClose={() => setShowProModal(false)} />
 
@@ -1208,35 +1048,6 @@ export default function Home() {
               ))}
             </div>
             <p className="text-center text-[10px] text-gray-600 pb-4 pt-1">Top 3 ascienden cada lunes · mín. 25 min de enfoque</p>
-          </div>
-        </div>
-      )}
-
-      {/* ── ABOUT MODAL ── */}
-      {showAbout && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-black/80 backdrop-blur-xl">
-          <div className="bg-[#0d0d0f] border border-white/[0.08] p-8 rounded-3xl max-w-md w-full relative shadow-2xl">
-            <button onClick={() => setShowAbout(false)}
-              className="absolute top-5 right-5 p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12" /></svg>
-            </button>
-            <div className="flex items-center gap-3 mb-5">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: accent }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="white">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z" />
-                </svg>
-              </div>
-              <div>
-                <h2 className="text-base font-black tracking-tight">Studdia</h2>
-                <p className="text-[10px] text-gray-500">Stable v9.0</p>
-              </div>
-            </div>
-            <p className="text-gray-400 text-sm leading-relaxed">
-              Un cockpit minimalista para trabajo profundo. Técnica Pomodoro con música ambiente de YouTube. Construido con Next.js y YouTube Data API.
-            </p>
-            <div className="mt-5 pt-5 border-t border-white/[0.06]">
-              <p className="text-[11px] text-gray-600 italic">Discipline equals freedom.</p>
-            </div>
           </div>
         </div>
       )}
