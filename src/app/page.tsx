@@ -8,83 +8,83 @@ const WORDS = ["Ventaja.", "Injusta.", "Tuya."];
 const FEATURES = [
   {
     icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z",
-    title: "Pomodoro Timer",
-    desc: "25‑minute focus blocks with auto‑reset and session tracking. Build deep‑work streaks.",
-  },
-  {
-    icon: "M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z",
-    title: "Custom Playlists",
-    desc: "Build named playlists from YouTube. Loop, shuffle, save — your music, your rules.",
+    title: "Filtro Anti-Distracción",
+    desc: "Bloqueamos recomendaciones, shorts y feeds de YouTube. Solo ves lo que tú pones. Tu mente, limpia.",
   },
   {
     icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z",
-    title: "YouTube Music",
-    desc: "Search millions of tracks directly inside the app. Embedded player, zero friction.",
+    title: "Concentración Sin Interrupciones",
+    desc: "El reproductor está integrado en la app. Sin pestañas abiertas, sin notificaciones, sin nada que te saque del foco.",
+  },
+  {
+    icon: "M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z",
+    title: "Playlists por Materia",
+    desc: "Cuando suena tu playlist de Física, tu cerebro sabe que toca trabajar. Sin fricción.",
   },
   {
     icon: "M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z",
-    title: "Zero Ads",
-    desc: "No pre‑rolls, no banners, no distractions. Just your timer and your music.",
+    title: "Liga Semanal",
+    desc: "Compite cada semana. Sube de posición, gana estatus, o baja de división si no te mueves.",
   },
   {
     icon: "M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
-    title: "Google Sign In",
-    desc: "One‑click auth. Your playlists sync across devices through your account.",
+    title: "Acceso con Google",
+    desc: "Un clic. Tus playlists y tareas sincronizadas en todos tus dispositivos.",
   },
   {
     icon: "M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z",
-    title: "Minimalist UI",
-    desc: "Dark, distraction‑free design engineered to keep you in the zone.",
+    title: "Modo Neón (Pro)",
+    desc: "No parece una app de estudio. Parece un arma.",
   },
 ];
 
 const STATS = [
   { value: "0",    label: "Anuncios" },
-  { value: "10h",  label: "Ahorradas/semana" },
-  { value: "25min",label: "Sesiones deep work" },
-  { value: "€2.50",label: "Precio Pro/mes" },
+  { value: "10h",  label: "Recuperadas/semana" },
+  { value: "25min",label: "Bloques de foco" },
+  { value: "2,50€",label: "Pro/mes" },
 ];
 
 const STEPS = [
   {
     n: "01",
-    title: "Pick your mode",
-    desc: "Choose Focus (25 min), Short Break (5 min) or Long Break (15 min). The timer adapts its colour so you always know where you are.",
+    title: "Elige tu modo",
+    desc: "Elige Foco (25 min), Descanso corto (5 min) o Descanso largo (15 min). El timer cambia de color para que siempre sepas dónde estás.",
     icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z",
   },
   {
     n: "02",
-    title: "Set your soundtrack",
-    desc: "Search YouTube or pick from a curated subject playlist — lo‑fi, maths, history, physics and more. Hit play and forget the tab.",
+    title: "Pon tu soundtrack",
+    desc: "Busca en YouTube o elige una playlist por materia — lo-fi, matemáticas, física y más. Dale play y olvídate de la pestaña.",
     icon: "M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z",
   },
   {
     n: "03",
-    title: "Lock in",
-    desc: "Press start. The sidebar fades away, the timer counts down and your music plays. When the session ends, your streak ticks up.",
+    title: "Entra en modo Dios",
+    desc: "Pulsa Start. El sidebar desaparece, el timer cuenta atrás y tu música suena. Al acabar la sesión, tu racha sube.",
     icon: "M13 2L4 14h7l-1 8 9-12h-7l1-8z",
   },
 ];
 
 const TESTIMONIALS = [
   {
-    quote: "I used to lose 40 minutes every session fighting with Spotify ads. Studdia just works — I open it and I'm in the zone immediately.",
+    quote: "Antes perdía 45 minutos por sesión saltando anuncios y mirando Reels. Con Studdia abro la app y estoy concentrada. Sin excusas.",
     name: "Mia R.",
-    role: "University student · Biology",
+    role: "2.º Bachillerato · Biología",
     initials: "MR",
     color: "#8b5cf6",
   },
   {
-    quote: "The sidebar fade when the timer runs is such a small detail but it genuinely helps. Pure focus mode.",
+    quote: "La liga semanal me cambió todo. Ahora estudio porque no quiero bajar de división. Es como entrenar, pero para los exámenes.",
     name: "Carlos D.",
-    role: "High school · Physics & Maths",
+    role: "4.º ESO · Física y Matemáticas",
     initials: "CD",
     color: "#06b6d4",
   },
   {
-    quote: "I built custom playlists for each subject. Now my brain literally switches into study mode the second the music starts.",
+    quote: "Tengo una playlist de lo-fi para cada asignatura. En cuanto suena, mi cerebro sabe que toca trabajar. Es automático.",
     name: "Jade K.",
-    role: "A‑Levels · Chemistry & History",
+    role: "1.º Bachillerato · Química e Historia",
     initials: "JK",
     color: "#10b981",
   },
@@ -94,23 +94,25 @@ const PLANS = [
   {
     name: "Free",
     price: "€0",
-    period: "forever",
+    period: "para siempre",
     accent: "#6b7280",
     accentBg: "rgba(107,114,128,0.1)",
     accentBorder: "rgba(107,114,128,0.2)",
-    cta: "Start for free",
+    cta: "Empezar gratis",
     ctaRoute: "/cockpit",
     features: [
-      "Pomodoro timer (Focus / Break / Long Break)",
-      "9 curated subject playlists",
-      "YouTube music search",
-      "Up to 5 tasks",
-      "1 custom playlist",
-      "Sync across devices (Google Sign In)",
+      "Timer Pomodoro (Foco / Descanso / Descanso largo)",
+      "4 playlists por materia incluidas",
+      "Búsqueda de música en YouTube",
+      "Hasta 5 tareas",
+      "1 playlist personalizada",
+      "Sincronización entre dispositivos (Google)",
     ],
     missing: [
-      "Unlimited tasks",
-      "Unlimited custom playlists",
+      "Tareas ilimitadas",
+      "Playlists personalizadas ilimitadas",
+      "Liga semanal",
+      "Timer ajustable (5–120 min)",
     ],
   },
   {
@@ -120,15 +122,15 @@ const PLANS = [
     accent: "#8b5cf6",
     accentBg: "rgba(139,92,246,0.12)",
     accentBorder: "rgba(139,92,246,0.35)",
-    cta: "Obtener mi Ventaja Injusta",
+    cta: "Obtener mi ventaja injusta",
     ctaRoute: "/login",
     badge: "Solo primeros 100 usuarios",
     features: [
-      "Todo lo del plan gratuito",
+      "Todo lo del plan gratis",
       "Tareas ilimitadas",
       "Playlists personalizadas ilimitadas",
       "Timer ajustable (5–120 min)",
-      "Liga semanal — sube de posición",
+      "Liga semanal — sube de división",
       "Badge Pro en la app",
     ],
     missing: [],
@@ -139,53 +141,53 @@ const PAINS = [
   {
     emoji: "🕳️",
     pain: "YouTube es un agujero negro",
-    solution: "Reproductor integrado sin recomendaciones, sin Shorts, sin feeds. Solo el vídeo que tú pones.",
+    solution: "Filtramos YouTube en tiempo real. Cero memes, cero shorts, cero recomendaciones. Solo el vídeo que tú eliges.",
     accent: "#f87171",
   },
   {
-    emoji: "😴",
-    pain: "Estudiar solo es aburrido",
-    solution: "Sistema de Ligas semanal: compite contra otros estudiantes, sube de posición y gana estatus real.",
+    emoji: "🏆",
+    pain: "Estudiar solo te aburre y te pierde",
+    solution: "No estudias solo. Subes de liga cada semana compitiendo contra estudiantes reales. El aburrimiento se convierte en rivalidad.",
     accent: "#fbbf24",
   },
   {
-    emoji: "📋",
-    pain: "Las tareas se acumulan sin control",
-    solution: "Task Dashboard con prioridades y barra de progreso. Ver el avance engancha más que el scroll infinito.",
+    emoji: "⚡",
+    pain: "Tu cerebro necesita el modo Dios",
+    solution: "Interfaz Neón diseñada para eliminar la fatiga mental. Cuando el timer corre, el sidebar desaparece. Solo tú y el trabajo.",
     accent: "#8b5cf6",
   },
   {
     emoji: "⏰",
     pain: "'Solo 5 minutos más' = 2 horas perdidas",
-    solution: "Pomodoro con cuenta atrás visual y chime al terminar. Tu cerebro aprende que el tiempo es real.",
+    solution: "Pomodoro con cuenta atrás visual y alarma real al terminar. Tu cerebro aprende que el tiempo es real y finito.",
     accent: "#10b981",
   },
 ];
 
 const FAQS = [
   {
-    q: "Is Studdia completely free?",
-    a: "Studdia has a free plan with no ads. A Pro plan at €2.50/month unlocks unlimited tasks, unlimited custom playlists, and future Pro features.",
+    q: "¿Es Studdia completamente gratis?",
+    a: "Studdia tiene un plan gratis sin anuncios. El plan Pro a 2,50€/mes desbloquea tareas ilimitadas, playlists ilimitadas y la Liga semanal.",
   },
   {
-    q: "Do I need to create an account?",
-    a: "No sign‑up is required. You can open the app and start a session immediately. Sign in with Google only if you want your playlists to sync across devices.",
+    q: "¿Necesito crear una cuenta?",
+    a: "No hace falta registro. Puedes abrir la app y empezar una sesión en segundos. Solo entra con Google si quieres sincronizar tus playlists entre dispositivos.",
   },
   {
-    q: "Where does the music come from?",
-    a: "All music is streamed directly from YouTube via the official IFrame API. Any video you can find on YouTube can be added to a playlist inside Studdia.",
+    q: "¿De dónde viene la música?",
+    a: "Toda la música viene directamente de YouTube vía la API oficial de IFrame. Cualquier vídeo que encuentres en YouTube puede añadirse a una playlist dentro de Studdia.",
   },
   {
-    q: "Will ads play during music?",
-    a: "No ads play inside the embedded player. Studdia is engineered specifically so you never hear an ad mid‑session.",
+    q: "¿Se reproducen anuncios durante la música?",
+    a: "No. El reproductor integrado no muestra anuncios. Studdia está construido específicamente para que nunca escuches un anuncio a media sesión.",
   },
   {
-    q: "Can I use Studdia on mobile?",
-    a: "Studdia is fully responsive. The sidebar collapses on small screens so the timer and player stay centred. Works great on any modern browser.",
+    q: "¿Puedo usar Studdia en el móvil?",
+    a: "Studdia es completamente responsive. El sidebar se colapsa en pantallas pequeñas para que el timer y el reproductor queden centrados. Funciona en cualquier navegador moderno.",
   },
   {
-    q: "How does playlist sync work?",
-    a: "When you sign in with Google, your playlists are saved to a Supabase database. When you log in on another device, they're loaded automatically.",
+    q: "¿Qué es la Liga semanal?",
+    a: "La Liga semanal es un sistema de competición entre estudiantes. Cada semana acumulas puntos con tus sesiones de foco. Los mejores suben de división; los que no se mueven, bajan. Es la forma más eficaz de mantenerte constante.",
   },
 ];
 
@@ -257,9 +259,9 @@ export default function Landing() {
       {/* ── SCARCITY BANNER ── */}
       <div className="relative z-30 w-full flex flex-wrap items-center justify-center gap-x-2 gap-y-0.5 px-4 py-2 text-[11px] font-bold text-center"
         style={{ background: "linear-gradient(90deg,#4c1d95,#6d28d9,#4c1d95)", backgroundSize: "200% 100%", animation: "pro-badge 5s linear infinite" }}>
-        <span className="text-yellow-300">⚡ Oferta de lanzamiento:</span>
+        <span className="text-yellow-300">⚡ Lanzamiento limitado:</span>
         <span className="text-white">Studdia Pro a solo 2,50€ para los primeros 100 usuarios</span>
-        <span className="text-white/60 hidden sm:inline">— después subirá de precio.</span>
+        <span className="text-white/60 hidden sm:inline">— después sube. Sin vuelta atrás.</span>
         <a href="#pricing" className="text-yellow-300 underline hover:no-underline font-black ml-1">Ver oferta →</a>
       </div>
 
@@ -290,15 +292,15 @@ export default function Landing() {
             onClick={() => router.push("/login")}
             className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2"
           >
-            Sign in
+            Entrar
           </button>
-          <a href="#pricing" className="text-sm text-gray-400 hover:text-white transition-colors px-2 py-2 hidden sm:block">Pricing</a>
+          <a href="#pricing" className="text-sm text-gray-400 hover:text-white transition-colors px-2 py-2 hidden sm:block">Precio</a>
           <button
             onClick={() => router.push("/cockpit")}
             className="text-sm font-bold px-5 py-2.5 rounded-xl transition-all duration-200 active:scale-95"
             style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 0 24px rgba(139,92,246,0.3)" }}
           >
-            Open App →
+            Abrir App →
           </button>
         </div>
       </nav>
@@ -308,16 +310,16 @@ export default function Landing() {
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-semibold tracking-wide mb-8">
           <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-          Sin anuncios · Sin distracciones · Abierto en segundos
+          Hecho por un estudiante · Sin anuncios · Abierto en segundos
         </div>
 
         {/* Headline */}
         <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.08] mb-6">
-          Saca las notas que esperan
+          Saca las notas que quieres
           <br className="hidden sm:block" />
-          {" "}sin sacrificar tus tardes de{" "}
+          {" "}sin regalar tus tardes.{" "}
           <span style={{ background: "linear-gradient(135deg, #a78bfa, #8b5cf6, #6d28d9)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-            basket o videojuegos.
+            El Cockpit que bloquea el caos de YouTube y te obliga a ganar.
           </span>
         </h1>
 
@@ -336,11 +338,11 @@ export default function Landing() {
         </div>
 
         <p className="text-gray-400 text-lg md:text-xl leading-relaxed mb-3 max-w-2xl">
-          Studdia Pro: el único Cockpit que elimina el 99% de las distracciones de YouTube
-          y te{" "}<strong className="text-white">obliga a ser productivo mediante competición real.</strong>
+          Studdia Pro: el primer entorno de foco que filtra YouTube en tiempo real
+          y{" "}<strong className="text-white">te obliga a ser productivo mediante competición real.</strong>
         </p>
         <p className="text-gray-600 text-base mb-10 max-w-xl">
-          No es una herramienta. Es tu ventaja injusta estudiando.
+          Hecho por un estudiante, para estudiantes de 3.º ESO y Bachillerato que van en serio.
         </p>
 
         {/* CTAs */}
@@ -350,11 +352,11 @@ export default function Landing() {
             className="px-8 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all duration-200 active:scale-95"
             style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 0 50px rgba(139,92,246,0.45)", border: "1px solid rgba(168,85,247,0.4)" }}
           >
-            Obtener mi Ventaja Injusta →
+            Obtener mi ventaja injusta →
           </button>
-          <a href="#pricing"
+          <a href="#how-it-works"
             className="px-6 py-4 rounded-2xl font-bold text-sm text-gray-400 hover:text-white bg-white/[0.04] border border-white/[0.08] hover:border-white/[0.15] transition-all duration-200">
-            Ver precios
+            Ver el Filtro Anti-Distracción ↓
           </a>
         </div>
 
@@ -397,7 +399,7 @@ export default function Landing() {
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <span className="text-white font-black text-lg">18:24</span>
-                  <span className="text-gray-600 text-[9px] uppercase tracking-wider">focus</span>
+                  <span className="text-gray-600 text-[9px] uppercase tracking-wider">foco</span>
                 </div>
               </div>
               <div className="w-full h-7 rounded-lg bg-violet-600/30 border border-violet-500/20" />
@@ -428,11 +430,11 @@ export default function Landing() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="relative z-10 px-6 pb-24 max-w-5xl mx-auto w-full">
+      <section id="how-it-works" className="relative z-10 px-6 pb-24 max-w-5xl mx-auto w-full">
         <div className="text-center mb-14">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">How it works</p>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Three steps to deep work.</h2>
-          <p className="text-gray-500 text-base max-w-md mx-auto">No onboarding. No tutorial. You already know what to do.</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Cómo funciona</p>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Tres pasos para el foco total.</h2>
+          <p className="text-gray-500 text-base max-w-md mx-auto">Sin onboarding. Sin tutorial. Ya sabes lo que hay que hacer.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {STEPS.map((s, i) => (
@@ -462,8 +464,8 @@ export default function Landing() {
       {/* ── DOLORES VS SOLUCIONES ── */}
       <section className="relative z-10 px-6 pb-24 max-w-5xl mx-auto w-full">
         <div className="text-center mb-14">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Por qué Studdia funciona</p>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Tu problema ya tiene solución.</h2>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">El value stack</p>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Por esto Studdia destroza la competencia.</h2>
           <p className="text-gray-500 text-base max-w-lg mx-auto">Cada excusa para no estudiar tiene una respuesta concreta dentro de la app.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -488,9 +490,9 @@ export default function Landing() {
       {/* ── FEATURES GRID ── */}
       <section className="relative z-10 px-6 pb-24 max-w-5xl mx-auto w-full">
         <div className="text-center mb-14">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Features</p>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Everything you need. Nothing you don&apos;t.</h2>
-          <p className="text-gray-500 text-base max-w-md mx-auto">Six features. Zero bloat. Built to keep you locked in.</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Lo que obtienes</p>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Todo lo que necesitas. Nada que no.</h2>
+          <p className="text-gray-500 text-base max-w-md mx-auto">Seis armas. Cero relleno. Diseñado para mantenerte en el estado de foco.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map((f) => (
@@ -514,9 +516,9 @@ export default function Landing() {
       {/* ── TESTIMONIALS ── */}
       <section className="relative z-10 px-6 pb-24 max-w-5xl mx-auto w-full">
         <div className="text-center mb-14">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Students love it</p>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Real words from real students.</h2>
-          <p className="text-gray-500 text-base max-w-md mx-auto">No paid reviews. Just people who actually study with Studdia.</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Lo que dicen</p>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Palabras reales de estudiantes reales.</h2>
+          <p className="text-gray-500 text-base max-w-md mx-auto">Sin reseñas compradas. Solo gente de 3.º ESO y Bachillerato que estudia con Studdia.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
           {TESTIMONIALS.map((t) => (
@@ -547,9 +549,9 @@ export default function Landing() {
       {/* ── FAQ ── */}
       <section className="relative z-10 px-6 pb-24 max-w-3xl mx-auto w-full">
         <div className="text-center mb-14">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">FAQ</p>
-          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">Got questions?</h2>
-          <p className="text-gray-500 text-base max-w-md mx-auto">Answers to the things people ask before they try it.</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Preguntas</p>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">¿Tienes dudas?</h2>
+          <p className="text-gray-500 text-base max-w-md mx-auto">Lo que te preguntas antes de probarlo.</p>
         </div>
         <div className="flex flex-col gap-2">
           {FAQS.map((f, i) => (
@@ -578,12 +580,12 @@ export default function Landing() {
       {/* ── FINAL CTA ── */}
       <section id="pricing" className="relative z-10 px-6 pb-24 max-w-4xl mx-auto w-full">
         <div className="text-center mb-14">
-          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Precio sin-excusas</p>
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-violet-400 mb-3">Precio sin excusas</p>
           <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-3">
-            Por menos que un Red Bull.<br />
-            <span style={{ background: "linear-gradient(135deg,#a78bfa,#8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>10 horas de productividad a la semana.</span>
+            Menos que un Red Bull.<br />
+            <span style={{ background: "linear-gradient(135deg,#a78bfa,#8b5cf6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>10 horas de vida recuperadas a la semana.</span>
           </h2>
-          <p className="text-gray-500 text-base max-w-lg mx-auto">2,50€/mes. Sin permanencia. Sin letra pequeña. Y si no te gusta, cancelas en un clic.</p>
+          <p className="text-gray-500 text-base max-w-lg mx-auto">Studdia Pro cuesta menos que un Red Bull y te devuelve 10 horas de vida a la semana. Si no te concentras más en los primeros 10 minutos, es que no eres humano. Sin permanencia. Cancela cuando quieras.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
           {PLANS.map((plan) => (
@@ -604,7 +606,7 @@ export default function Landing() {
               )}
               {/* Header */}
               <div className="mb-6">
-                <span className="text-[11px] font-bold uppercase tracking-[0.18em] mb-3 block" style={{ color: plan.accent }}>{plan.name}</span>
+                <span className="text-[11px] font-bold uppercase tracking-[0.18em] mb-3 block" style={{ color: plan.name === "Pro" ? "#ffffff" : plan.accent }}>{plan.name}</span>
                 <div className="flex items-end gap-1.5">
                   <span className="text-5xl font-black text-white">{plan.price}</span>
                   <span className="text-gray-500 text-sm mb-1.5">{plan.period}</span>
@@ -663,14 +665,14 @@ export default function Landing() {
             Sin registro. Abierto en menos de 10 segundos.
           </p>
           <p className="relative text-gray-600 text-sm mb-10 max-w-sm mx-auto">
-            Los estudiantes que usan Studdia completan sus sesiones. Los que no, siguen mirando el móvil.
+            Los estudiantes que usan Studdia completan sus sesiones. Los que no, siguen scrolleando el móvil.
           </p>
           <div className="relative flex flex-wrap gap-3 justify-center">
             <button
               onClick={() => router.push("/cockpit")}
               className="px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.15em] transition-all duration-200 active:scale-95"
               style={{ background: "linear-gradient(135deg, #8b5cf6, #6d28d9)", boxShadow: "0 0 50px rgba(139,92,246,0.45)", border: "1px solid rgba(168,85,247,0.4)" }}>
-              Obtener mi Ventaja Injusta →
+              Obtener mi ventaja injusta →
             </button>
             <button
               onClick={() => router.push("/login")}
@@ -688,12 +690,12 @@ export default function Landing() {
             <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" fill="#6d28d9" strokeLinejoin="round"/>
           </svg>
           <span className="font-bold text-gray-500">Studdia</span>
-          <span>· No ads · Study In Peace.</span>
+          <span>· Sin anuncios · Hecho por estudiantes.</span>
         </div>
         <div className="flex items-center gap-5 text-[11px] text-gray-600">
           <a href="https://github.com/jaden972972/Studdia" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">GitHub</a>
           <button onClick={() => router.push("/cockpit")} className="hover:text-gray-400 transition-colors">App</button>
-          <button onClick={() => router.push("/login")} className="hover:text-gray-400 transition-colors">Sign in</button>
+          <button onClick={() => router.push("/login")} className="hover:text-gray-400 transition-colors">Entrar</button>
         </div>
       </footer>
     </div>

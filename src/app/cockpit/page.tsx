@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useSubscription } from "@/hooks/useSubscription";
 import ProModal from "@/app/components/ProModal";
@@ -41,8 +42,9 @@ const SUBJECT_PLAYLISTS: Playlist[] = [
 const DEFAULT_PLAYLISTS: Playlist[] = [...SUBJECT_PLAYLISTS];
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const { isPro, limits } = useSubscription();
+  const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
@@ -88,6 +90,13 @@ export default function Home() {
   const videoIdRef = useRef(videoId);
   useEffect(() => { sessionRef.current = session; }, [session]);
   useEffect(() => { videoIdRef.current = videoId; }, [videoId]);
+
+  // ── Auth gate: require Google sign-in ──
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.replace("/login");
+    }
+  }, [status, router]);
 
   // Derive active tracks from current active playlist
   const activeTracks = playlists.find(p => p.id === activePlaylistId)?.tracks ?? [];
@@ -426,11 +435,36 @@ export default function Home() {
     setLoading(false);
   };
 
+  // Loading / unauthenticated gate
+  if (status === "loading" || status === "unauthenticated") {
+    return (
+      <div className="h-screen w-screen bg-[#080808] flex flex-col items-center justify-center gap-4">
+        <div className="w-9 h-9 rounded-full border-2 border-t-transparent animate-spin"
+          style={{ borderColor: "#8b5cf6", borderTopColor: "transparent" }} />
+        <p className="text-gray-600 text-xs tracking-widest uppercase">
+          {status === "unauthenticated" ? "Redirigiendo..." : "Cargando..."}
+        </p>
+      </div>
+    );
+  }
+
   return (
     <main className="h-screen w-screen text-white overflow-hidden flex font-sans"
       style={isPro
         ? { background: "radial-gradient(ellipse at 30% 50%, #0e0a1a 0%, #080808 60%, #000 100%)" }
         : { background: "#080808" }}>
+
+      {/* ── PRO AMBIENT ORBS ── */}
+      {isPro && (
+        <>
+          <div className="fixed top-0 left-1/4 w-[700px] h-[500px] pointer-events-none z-0"
+            style={{ background: "radial-gradient(ellipse, rgba(139,92,246,0.07) 0%, transparent 65%)", animation: "pro-badge 12s linear infinite" }} />
+          <div className="fixed bottom-0 right-1/4 w-[500px] h-[400px] pointer-events-none z-0"
+            style={{ background: "radial-gradient(ellipse, rgba(59,130,246,0.05) 0%, transparent 65%)" }} />
+          <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] pointer-events-none z-0"
+            style={{ background: `radial-gradient(ellipse, ${accent}08 0%, transparent 60%)` }} />
+        </>
+      )}
 
       {/* ── SIDEBAR OVERLAY (mobile) ── */}
       {sidebarOpen && (
@@ -782,7 +816,10 @@ export default function Home() {
           <div className="flex flex-col gap-5 lg:w-80 xl:w-[340px] shrink-0">
 
             {/* Pomodoro card */}
-            <div className="bg-[#0d0d0f] border border-white/[0.07] rounded-3xl p-7 flex flex-col items-center">
+            <div className="bg-[#0d0d0f] border rounded-3xl p-7 flex flex-col items-center transition-all duration-500"
+              style={isPro
+                ? { borderColor: `${accent}35`, boxShadow: `0 0 30px ${accent}12, inset 0 1px 0 ${accent}15` }
+                : { borderColor: "rgba(255,255,255,0.07)" }}>
 
               {/* Mode tabs */}
               <div className="flex gap-1 p-1 bg-black/40 rounded-full border border-white/[0.06] mb-7 w-full">
@@ -816,9 +853,14 @@ export default function Home() {
 
               {/* Circular ring */}
               <div className="relative flex items-center justify-center mb-7">
-                <svg width="196" height="196" className="-rotate-90" style={{ filter: `drop-shadow(0 0 20px ${accent}40)` }}>
+                <svg width="196" height="196" className="-rotate-90" style={{ filter: `drop-shadow(0 0 ${isPro ? "28px" : "20px"} ${accent}${isPro ? "70" : "40"})` }}>
+                  {/* Pro outer glow ring */}
+                  {isPro && (
+                    <circle cx="98" cy="98" r="92" fill="none" stroke={accent} strokeWidth="1"
+                      strokeDasharray="4 8" opacity="0.25" />
+                  )}
                   <circle cx="98" cy="98" r={radius} fill="none" stroke="#1a1a1e" strokeWidth="5" />
-                  <circle cx="98" cy="98" r={radius} fill="none" stroke={accent} strokeWidth="5"
+                  <circle cx="98" cy="98" r={radius} fill="none" stroke={accent} strokeWidth={isPro ? "6" : "5"}
                     strokeLinecap="round"
                     strokeDasharray={circumference}
                     strokeDashoffset={circumference * (1 - progress)}
