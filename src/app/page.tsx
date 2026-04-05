@@ -99,30 +99,27 @@ const FAQS = [
   },
 ];
 
-const PRO_FEATURES = [
-  "Todo lo del plan Free",
-  "Acceso Exclusivo al Modo Hormozi (Dark Mode Pro)",
-  "Timer totalmente ajustable (1–180 min)",
-  "Playlists e IA de estudio ilimitadas",
-  "Liga de Leyendas con insignias exclusivas",
-  "Estadísticas detalladas de enfoque semanal",
-  "Si eres #1 de tu liga → Pro gratis",
+const PRO_FEATURES: { icon: "bolt" | "diamond" | "shield"; text: string }[] = [
+  { icon: "bolt",    text: "Multiplicador XP x2 — Sube de liga el doble de rápido. Inalcanzable para Free." },
+  { icon: "bolt",    text: "Modo Hormozi Desbloqueado — Estética negra y magenta para enfoque extremo." },
+  { icon: "shield",  text: "Protección de Racha — 1 escudo por semana si olvidas estudiar." },
+  { icon: "bolt",    text: "Timer 100% Ajustable — De 1 a 180 minutos para Deep Work real." },
+  { icon: "diamond", text: "Estatus de Leyenda — Nombre resaltado y badge neón en todos los rankings." },
+  { icon: "bolt",    text: "IA de Enfoque — Recomendaciones personalizadas y playlists sin límite." },
 ];
 
 const FREE_FEATURES = [
-  "Timer estándar (Pomodoro 25/5)",
-  "Música sin anuncios (YouTube)",
-  "4 playlists por materia",
-  "Liga de Bronce (30 estudiantes)",
-  "Sincronización entre dispositivos",
+  "Acceso a la Liga Estudiantil (Fase de Grupos)",
+  "Timer Pomodoro 25/5 (Sin ajustes)",
+  "5 Materias · 4 Playlists por materia",
 ];
 
 const FREE_MISSING = [
-  "Modo Hormozi — Dark Mode Pro",
+  "Multiplicador XP x2",
+  "Modo Hormozi (Dark Mode Pro)",
   "Timer ajustable (1–180 min)",
-  "Playlists e IA ilimitadas",
-  "Liga de Leyendas + insignias",
-  "Estadísticas semanales de enfoque",
+  "Protección de Racha",
+  "Estatus de Leyenda",
 ];
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -747,39 +744,43 @@ export default function Landing() {
               className="text-[12px] font-black uppercase tracking-[0.2em] mb-4"
               style={{ color: t.textMuted }}
             >
-              Free — Siempre gratis
+              El Desafío — Siempre gratis
             </span>
             <div className="flex items-end gap-1.5 mb-7">
-              <span className="text-5xl font-black" style={{ color: t.textPrimary }}>€0</span>
+              <span className="text-6xl font-black" style={{ color: t.textPrimary }}>€0</span>
               <span className="text-sm mb-1.5" style={{ color: t.textMuted }}>para siempre</span>
             </div>
-            <ul className="flex flex-col gap-3 mb-8 flex-1">
+            <ul className="flex flex-col gap-3 mb-6 flex-1">
               {FREE_FEATURES.map((f) => (
                 <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: t.textSecondary }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.textMuted}
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.checkColor}
                     strokeWidth="2.5" className="shrink-0 mt-0.5">
                     <path d="M20 6L9 17l-5-5" />
                   </svg>
                   {f}
                 </li>
               ))}
-              {FREE_MISSING.map((f) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: t.missedColor }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.missedColor}
-                    strokeWidth="1.8" className="shrink-0 mt-0.5">
-                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-                  </svg>
-                  <span className="line-through decoration-1" style={{ textDecorationColor: t.missedColor }}>{f}</span>
-                </li>
-              ))}
             </ul>
+            {/* Elite reward callout */}
+            <div
+              className="mb-7 rounded-2xl p-4"
+              style={{ background: t.accentBg, border: `1px solid ${t.accentBorder}` }}
+            >
+              <p className="text-[10px] font-black uppercase tracking-[0.18em] mb-2" style={{ color: t.accentText }}>
+                🏆 Recompensa de Élite
+              </p>
+              <p className="text-[12px] leading-relaxed" style={{ color: t.textPrimary }}>
+                Si ganas tu grupo y la Liga Élite (Top 5), consigues{" "}
+                <strong>1 mes de Pro gratis</strong>. El 2.º puesto:{" "}
+                <strong>7 días</strong>.
+              </p>
+            </div>
             <button
               onClick={() => router.push("/cockpit")}
               className="w-full py-3.5 rounded-2xl font-black text-sm transition-all uppercase tracking-[0.1em]"
-              style={t.freeCTA}
+              style={{ background: "transparent", border: `2px solid ${t.textPrimary}`, color: t.textPrimary }}
             >
-              Empezar a estudiar gratis
+              Aceptar el desafío gratis
             </button>
           </div>
 
@@ -796,7 +797,7 @@ export default function Landing() {
               className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-white"
               style={{ background: t.proBadgeBg, boxShadow: dark ? "0 0 20px rgba(139,92,246,0.5)" : "0 4px 14px rgba(209,0,209,0.35)" }}
             >
-              ⚡ Solo {spotsLeft} plazas a este precio
+              💎 SÉ UNA LEYENDA
             </div>
             <span
               className="text-[12px] font-black uppercase tracking-[0.2em] mb-4"
@@ -805,18 +806,22 @@ export default function Landing() {
               Pro — Ventaja Injusta
             </span>
             <div className="flex items-end gap-1.5 mb-7">
-              <span className="text-5xl font-black" style={{ color: t.textPrimary }}>€2,50</span>
+              <span className="text-6xl font-black" style={{ color: t.textPrimary }}>€2,50</span>
               <span className="text-sm mb-1.5" style={{ color: t.textMuted }}>/ mes · sin permanencia</span>
             </div>
             <ul className="flex flex-col gap-3 mb-8 flex-1">
-              {PRO_FEATURES.map((f, i) => (
-                <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: i === 0 ? t.textMuted : t.textPrimary }}>
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                    stroke={i === 0 ? t.textMuted : t.checkColor} strokeWidth="2.5"
-                    className="shrink-0 mt-0.5">
-                    <path d="M20 6L9 17l-5-5" />
+              {PRO_FEATURES.map((f) => (
+                <li key={f.text} className="flex items-start gap-2.5 text-sm" style={{ color: t.textPrimary }}>
+                  <svg
+                    width="14" height="14" viewBox="0 0 24 24"
+                    fill={t.checkColor} stroke="none"
+                    className="shrink-0 mt-0.5"
+                  >
+                    {f.icon === "bolt" && <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />}
+                    {f.icon === "diamond" && <polygon points="12,2 22,12 12,22 2,12" />}
+                    {f.icon === "shield" && <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />}
                   </svg>
-                  {f}
+                  {f.text}
                 </li>
               ))}
             </ul>
@@ -825,7 +830,7 @@ export default function Landing() {
               className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-[0.1em] transition-all active:scale-[0.98] text-white"
               style={{ background: t.btnPrimary, boxShadow: t.btnShadow }}
             >
-              Garantizar mi plaza Pro →
+              Garantizar mi Estatus Pro →
             </button>
             <p className="text-center text-[10px] mt-3" style={{ color: t.textMuted }}>
               Sin permanencia · Cancela cuando quieras
