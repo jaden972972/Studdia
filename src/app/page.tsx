@@ -9,10 +9,10 @@ import { useTheme } from "@/app/providers";
 /* ─────────────────────────────────────────────────────────────────────────── */
 
 const PAINS = [
-  "Abres YouTube para poner música y 40 minutos después sigues viendo shorts.",
-  "Llevas una semana diciéndote 'mañana me pongo en serio'.",
-  "Empiezas a estudiar y ya tienes 8 pestañas abiertas que no son el libro.",
-  "Acabas el día sin haber hecho nada y sin saber exactamente cómo pasó.",
+  "Abres YouTube para poner música y terminas viendo 40 minutos de Shorts que no te importan.",
+  "Llevas una semana prometiéndote que 'mañana te pones en serio'. Mañana nunca llega.",
+  "Intentas estudiar con 8 pestañas abiertas. Tu cerebro está en todas partes menos en el libro.",
+  "Terminas el día agotado, sin haber avanzado nada y sin saber exactamente en qué se te fue el tiempo.",
 ];
 
 const VALUE_STACK = [
@@ -492,8 +492,9 @@ export default function Landing() {
               key={i}
               className="flex items-start gap-4 p-6 rounded-2xl"
               style={{
-                background: dark ? "rgba(239,68,68,0.04)" : "rgba(220,38,38,0.04)",
-                border: dark ? "1px solid rgba(239,68,68,0.12)" : "1px solid rgba(220,38,38,0.12)",
+                background: dark ? "rgba(239,68,68,0.04)" : "#FFFFFF",
+                border: dark ? "1px solid rgba(239,68,68,0.12)" : "1px solid rgba(0,0,0,0.06)",
+                boxShadow: dark ? "none" : "0 1px 4px rgba(0,0,0,0.04)",
               }}
             >
               <span className="text-2xl shrink-0">😬</span>
@@ -509,16 +510,17 @@ export default function Landing() {
           style={{ background: t.accentBg, border: `1px solid ${t.accentBorder}` }}
         >
           <p className="text-lg md:text-xl font-bold leading-relaxed" style={{ color: t.textPrimary }}>
-            La media de un estudiante de Bachillerato pierde{" "}
-            <span style={{ color: t.accent }}>3 horas y 14 minutos al día</span> en distracciones
+            La media de un estudiante pierde{" "}
+            <span style={{ color: t.accent }}>3 horas al día</span> en distracciones
             digitales mientras &quot;estudia&quot;.
           </p>
           <p className="text-base mt-3" style={{ color: t.textSecondary }}>
-            Multiplícalo por 5 días. Son{" "}
-            <strong style={{ color: t.textPrimary }}>16 horas a la semana</strong> que nunca vuelven.
+            Son <strong style={{ color: t.textPrimary }}>15 horas a la semana</strong> en días
+            lectivos —{" "}
+            <strong style={{ color: t.textPrimary }}>1.095 horas al año</strong> que nunca vuelven.
           </p>
           <p className="text-sm mt-2" style={{ color: t.textMuted }}>
-            Eso es 832 horas al año. Suficiente para aprender 4 idiomas. O para suspender selectividad.
+            1.000 horas es la diferencia entre entrar en la carrera que quieres o quedarte fuera por tres décimas.
           </p>
         </div>
       </section>
