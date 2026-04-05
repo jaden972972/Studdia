@@ -28,8 +28,8 @@ const VALUE_STACK = [
 const STEPS = [
   {
     n: "01",
-    title: "Abre la app. Sin registro.",
-    desc: "En menos de 10 segundos estás en el cockpit. Sin tutorial. Sin onboarding. El timer ya está listo.",
+    title: "Abre la app. Acceso inmediato con Google.",
+    desc: "En menos de 10 segundos estás dentro. Sin tutorial. Sin formularios. Conectas Google y el panel ya está listo.",
     icon: "M13 2L4 14h7l-1 8 9-12h-7l1-8z",
   },
   {
@@ -41,7 +41,7 @@ const STEPS = [
   {
     n: "03",
     title: "Pulsa Iniciar. Desaparece el mundo.",
-    desc: "El sidebar se pliega. El timer cuenta atrás. La sesión se registra en la liga. Al final: alarma, racha +1, podio.",
+    desc: "El panel lateral se pliega. El cronómetro cuenta atrás. La sesión se registra en la liga. Al final: alarma, racha +1, podio.",
     icon: "M22 11.08V12a10 10 0 11-5.93-9.14M22 4L12 14.01l-3-3",
   },
 ];
@@ -100,10 +100,10 @@ const FAQS = [
 ];
 
 const PRO_FEATURES: { icon: "bolt" | "diamond" | "shield"; text: string }[] = [
-  { icon: "bolt",    text: "Multiplicador XP x2 — Sube de liga el doble de rápido. Inalcanzable para Free." },
+  { icon: "bolt",    text: "Multiplicador XP x2 — Sube de liga el doble de rápido. Inalcanzable en la capa gratuita." },
   { icon: "bolt",    text: "Modo Hormozi Desbloqueado — Estética negra y magenta para enfoque extremo." },
   { icon: "shield",  text: "Protección de Racha — 1 escudo por semana si olvidas estudiar." },
-  { icon: "bolt",    text: "Timer 100% Ajustable — De 1 a 180 minutos para Deep Work real." },
+  { icon: "bolt",    text: "Timer 100% Ajustable — De 1 a 180 minutos para trabajo profundo real." },
   { icon: "diamond", text: "Estatus de Leyenda — Nombre resaltado y badge neón en todos los rankings." },
   { icon: "bolt",    text: "Algoritmo de selección de contenido: Estudiarás con los mejores vídeos, no con los que YouTube quiere que veas." },
 ];
@@ -116,7 +116,7 @@ const FREE_FEATURES = [
 
 const FREE_MISSING = [
   "Multiplicador XP x2",
-  "Modo Hormozi (Dark Mode Pro)",
+  "Modo Oscuro Pro",
   "Timer ajustable (1–180 min)",
   "Protección de Racha",
   "Estatus de Leyenda",
@@ -502,6 +502,11 @@ export default function Landing() {
           ))}
         </div>
         {/* Agitation stat */}
+        {/* Liga agitation line */}
+        <p className="text-center text-sm font-bold mb-6" style={{ color: t.accent }}>
+          Mientras tú pierdes el tiempo en Reels, otros 29 estudiantes están subiendo en la Liga Studdia.
+        </p>
+
         <div
           className="p-7 rounded-2xl text-center"
           style={{ background: t.accentBg, border: `1px solid ${t.accentBorder}` }}
@@ -534,7 +539,7 @@ export default function Landing() {
             Así de simple.
           </h2>
           <p className="text-base mt-3 max-w-md mx-auto" style={{ color: t.textMuted }}>
-            Sin onboarding. Sin tutorial. Sin excusas.
+            Sin pasos extra. Sin tutorial. Sin excusas.
           </p>
         </div>
         <div
@@ -913,7 +918,7 @@ export default function Landing() {
             Dentro de 10 segundos puedes estar en tu primera sesión de foco real.
           </p>
           <p className="relative text-sm mb-10 max-w-sm mx-auto" style={{ color: t.textMuted }}>
-            Sin registro. Sin tarjeta. Sin excusas.
+            Acceso inmediato. Sin tarjeta. Sin excusas.
           </p>
           <div className="relative flex flex-wrap gap-4 justify-center">
             <button
