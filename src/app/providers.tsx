@@ -10,10 +10,10 @@ export function useTheme() { return useContext(ThemeContext); }
 
 function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<"dark" | "light">(() => {
-    if (typeof window === "undefined") return "dark";
-    // Read from the attribute already set by the blocking script
+    if (typeof window === "undefined") return "light";
+    // Read from the attribute set by the blocking script; fall back to light
     const attr = document.documentElement.getAttribute("data-theme") as "dark" | "light" | null;
-    return attr ?? (localStorage.getItem("studdia_theme") as "dark" | "light") ?? "dark";
+    return (attr === "dark" || attr === "light") ? attr : "light";
   });
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);

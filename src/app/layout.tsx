@@ -36,18 +36,16 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      {/* Blocking script: applies theme before first paint — fixes mobile flash */}
+      {/* Blocking script: applies theme before first paint to avoid flash */}
       <head>
         <script dangerouslySetInnerHTML={{ __html: `
           (function(){
             try {
               var t = localStorage.getItem('studdia_theme');
-              if (!t) {
-                t = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-              }
-              document.documentElement.setAttribute('data-theme', t);
+              // Light is the default — only go dark if explicitly saved
+              document.documentElement.setAttribute('data-theme', t === 'dark' ? 'dark' : 'light');
             } catch(e) {
-              document.documentElement.setAttribute('data-theme', 'dark');
+              document.documentElement.setAttribute('data-theme', 'light');
             }
           })();
         `}} />

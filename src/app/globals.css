@@ -1,25 +1,34 @@
 @import "tailwindcss";
 
 /* ── Theme tokens ─────────────────────────────────────────────── */
+/* LIGHT IS THE DEFAULT — dark is opt-in via [data-theme="dark"] */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  /* Dark by default — overridden below for light */
+  --background:     #F9FAFB;
+  --foreground:     #1D1D1F;
+  --text-primary:   #1D1D1F;
+  --text-main:      #1D1D1F;
+  --text-secondary: #6E6E73;
+  --bg-main:        #FFFFFF;
+  --bg-surface:     #F9FAFB;
+  --bg-sidebar:     #F5F5F7;
+  --bg-card:        #FFFFFF;
+  --border-color:   rgba(0,0,0,0.08);
+  --accent:         #D100D1;
+}
+
+/* Dark mode — user opted-in */
+[data-theme="dark"] {
+  --background:     #0a0a0a;
+  --foreground:     #ededed;
   --text-primary:   #ffffff;
-  --text-main:      #ffffff;  /* alias */
+  --text-main:      #ffffff;
   --text-secondary: #cccccc;
   --bg-main:        #000000;
   --bg-surface:     #0d0d0f;
   --bg-sidebar:     #0d0d0d;
-}
-
-[data-theme="light"] {
-  --text-primary:   #1a1a1a;
-  --text-main:      #1a1a1a;
-  --text-secondary: #666666;
-  --bg-main:        #ffffff;
-  --bg-surface:     #f7f7f5;
-  --bg-sidebar:     #f5f5f5;
+  --bg-card:        #0a0a0d;
+  --border-color:   rgba(255,255,255,0.06);
+  --accent:         #8b5cf6;
 }
 
 @theme inline {
@@ -27,13 +36,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
@@ -80,11 +82,15 @@ body {
   animation: skeleton-shimmer 1.4s ease infinite;
 }
 
-/* ── PRO neon badge — always magenta, ignores theme ──────────────── */
+/* ── PRO neon badge — magenta in dark, solid in light ──────────────── */
 .pro-neon {
   filter:
     drop-shadow(0 0 4px #FF00FF)
     drop-shadow(0 0 10px rgba(255,0,255,0.6));
+}
+[data-theme="light"] .pro-neon {
+  filter: none;
+  opacity: 0.85;
 }
 
 /* ── LEYENDA badge ────────────────────────────────────────── */
@@ -110,20 +116,25 @@ body {
 
 
 /* ── Cockpit light mode overrides ──────────────────────────── */
-[data-theme="light"] .bg-\[\#080808\]          { background-color: #f0efe9 !important; }
-[data-theme="light"] .bg-\[\#0c0c0e\]          { background-color: #f7f7f5 !important; }
+/* These override the hardcoded dark Tailwind classes in cockpit/page.tsx */
+[data-theme="light"] .bg-\[\#080808\]          { background-color: #F9FAFB !important; }
+[data-theme="light"] .bg-\[\#0a0a0d\]          { background-color: #ffffff !important; }
+[data-theme="light"] .bg-\[\#08080b\]          { background-color: #F9FAFB !important; }
+[data-theme="light"] .bg-\[\#0c0c0e\]          { background-color: #F5F5F7 !important; }
 [data-theme="light"] .bg-\[\#0d0d0f\]          { background-color: #ffffff !important; }
+[data-theme="light"] .bg-\[\#0d0d10\]          { background-color: #F5F5F7 !important; }
 [data-theme="light"] .bg-\[\#111\]             { background-color: #f4f4f2 !important; }
 [data-theme="light"] .bg-\[\#111113\]          { background-color: #f4f4f2 !important; }
-[data-theme="light"] .bg-black\/40             { background-color: rgba(0,0,0,0.05) !important; }
-[data-theme="light"] .bg-black\/60             { background-color: rgba(0,0,0,0.06) !important; }
-[data-theme="light"] .bg-white\/\[0\.03\]      { background-color: rgba(0,0,0,0.03) !important; }
+[data-theme="light"] .bg-black\/40             { background-color: rgba(0,0,0,0.04) !important; }
+[data-theme="light"] .bg-black\/60             { background-color: rgba(0,0,0,0.05) !important; }
+[data-theme="light"] .bg-white\/\[0\.02\]      { background-color: rgba(0,0,0,0.02) !important; }
+[data-theme="light"] .bg-white\/\[0\.03\]      { background-color: rgba(0,0,0,0.02) !important; }
 [data-theme="light"] .bg-white\/\[0\.04\]      { background-color: rgba(0,0,0,0.04) !important; }
 [data-theme="light"] .bg-white\/\[0\.05\]      { background-color: rgba(0,0,0,0.05) !important; }
 [data-theme="light"] .bg-white\/\[0\.08\]      { background-color: rgba(0,0,0,0.06) !important; }
-[data-theme="light"] .text-white               { color: #111111 !important; }
+[data-theme="light"] .text-white               { color: #1D1D1F !important; }
 [data-theme="light"] .text-gray-400            { color: #374151 !important; }
-[data-theme="light"] .text-gray-500            { color: #6b7280 !important; }
+[data-theme="light"] .text-gray-500            { color: #6E6E73 !important; }
 [data-theme="light"] .text-gray-600            { color: #9ca3af !important; }
 [data-theme="light"] .text-gray-700            { color: #bdbdb5 !important; }
 [data-theme="light"] .border-white\/\[0\.04\]  { border-color: rgba(0,0,0,0.05) !important; }
