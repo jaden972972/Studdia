@@ -7,6 +7,7 @@ import { useTheme } from "@/app/providers";
 interface ProModalProps {
   open: boolean;
   onClose: () => void;
+  onUpgrade?: () => void;
 }
 
 const PRO_FEATURES: { icon: "bolt" | "diamond" | "shield"; emoji: string; text: string }[] = [
@@ -16,7 +17,7 @@ const PRO_FEATURES: { icon: "bolt" | "diamond" | "shield"; emoji: string; text: 
   { icon: "shield",  emoji: "🛡️", text: "Protección de Racha Semanal" },
 ];
 
-export default function ProModal({ open, onClose }: ProModalProps) {
+export default function ProModal({ open, onClose, onUpgrade }: ProModalProps) {
   const router = useRouter();
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -151,7 +152,7 @@ export default function ProModal({ open, onClose }: ProModalProps) {
               <motion.button
                 whileHover={{ scale: 1.03, boxShadow: isDark ? "0 0 48px rgba(139,92,246,0.7), 0 6px 24px rgba(0,0,0,0.5)" : "0 0 40px rgba(209,0,209,0.6), 0 6px 20px rgba(209,0,209,0.3)" }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => { onClose(); router.push("/login"); }}
+                onClick={() => { if (onUpgrade) { onUpgrade(); } else { onClose(); router.push("/login"); } }}
                 className="w-full py-4 rounded-2xl font-black text-[13px] uppercase tracking-[0.18em] text-white relative overflow-hidden"
                 style={{
                   background: isDark

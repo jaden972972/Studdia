@@ -682,7 +682,7 @@ export default function Landing() {
             {/* Urgency counter */}
             {hasSpotsLeft && (
               <div
-                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl mb-5 font-black text-sm text-black"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl mb-5 font-black text-xs text-black"
                 style={{ background: "#FF00FF" }}
               >
                 <span>⚡</span>
@@ -857,19 +857,21 @@ export default function Landing() {
             >
               Pro — Ventaja Injusta
             </span>
-            <div className="flex items-end gap-2 mb-2">
-              {hasSpotsLeft && (
-                <span className="text-2xl line-through font-bold" style={{ color: t.textMuted }}>4,99€</span>
-              )}
-              <span className="text-6xl font-black" style={{ color: t.textPrimary }}>
-                {hasSpotsLeft ? "2,50€" : "4,99€"}
-              </span>
-              <span className="text-sm mb-1.5" style={{ color: t.textMuted }}>/ mes · sin permanencia</span>
+            <div className="flex flex-col mb-2">
+              <div className="flex items-baseline gap-2">
+                {hasSpotsLeft && (
+                  <span className="text-xl line-through font-bold" style={{ color: t.textMuted }}>4,99€</span>
+                )}
+                <span className="text-6xl font-black" style={{ color: t.textPrimary }}>
+                  {hasSpotsLeft ? "2,50€" : "4,99€"}
+                </span>
+              </div>
+              <span className="text-xs mt-0.5" style={{ color: t.textMuted }}>/ mes · sin permanencia</span>
             </div>
             {/* Urgency counter */}
             {hasSpotsLeft && (
               <div
-                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl mb-7 font-black text-sm text-black"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-2xl mb-7 font-black text-xs text-black"
                 style={{ background: "#FF00FF" }}
               >
                 <span>⚡</span>

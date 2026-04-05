@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useSubscription } from "@/hooks/useSubscription";
 import ProModal from "@/app/components/ProModal";
+import WaitlistModal from "@/app/components/WaitlistModal";
 import ProBadge from "@/app/components/ProBadge";
 import LogoStuddia from "@/app/components/LogoStuddia";
 import { LEAGUE_META } from "@/lib/subscription";
@@ -40,14 +41,23 @@ const DEFAULT_PLAYLISTS: Playlist[] = [...SUBJECT_PLAYLISTS];
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const { isPro, limits, leagueTier, legendBadge } = useSubscription();
+  const { isPro, limits, leagueTier, legendBadge, loading: subLoading } = useSubscription();
   const { muted, toggleMuted } = useTimer();
   const { toggleTheme, theme } = useTheme();
   const isDark = theme === "dark";
+
+  // Security: force light mode if subscription resolves as non-Pro
+  useEffect(() => {
+    if (!subLoading && !isPro && isDark) {
+      toggleTheme();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subLoading, isPro]);
   const leagueMeta = LEAGUE_META[leagueTier];
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
+  const [showWaitlist, setShowWaitlist] = useState(false);
   const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
   const [videoId, setVideoId] = useState(() => {
@@ -1005,7 +1015,14 @@ export default function Home() {
       </div>
 
       {/* ── PRO MODAL ── */}
-      <ProModal open={showProModal} onClose={() => setShowProModal(false)} />
+      <ProModal
+        open={showProModal}
+        onClose={() => setShowProModal(false)}
+        onUpgrade={() => { setShowProModal(false); setShowWaitlist(true); }}
+      />
+
+      {/* ── WAITLIST MODAL ── */}
+      <WaitlistModal open={showWaitlist} onClose={() => setShowWaitlist(false)} />
 
       {/* ── LEAGUE MODAL ── */}
       {showLeague && (

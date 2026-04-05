@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import LogoStuddia from "@/app/components/LogoStuddia";
 import { useTheme } from "@/app/providers";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface NavbarProps {
   onTimer?: () => void;
@@ -20,6 +21,13 @@ export default function Navbar({ onTimer, onLeague, onVideo }: NavbarProps) {
   const [mounted, setMounted] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
+  const { isPro } = useSubscription();
+
+  const handleThemeToggle = () => {
+    // Only allow switching TO dark if user is Pro
+    if (!isDark && !isPro) return;
+    toggleTheme();
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 30);
@@ -82,7 +90,7 @@ export default function Navbar({ onTimer, onLeague, onVideo }: NavbarProps) {
 
         {/* Theme toggle */}
         <button
-          onClick={toggleTheme}
+          onClick={handleThemeToggle}
           title={isDark ? "Modo claro" : "Modo oscuro"}
           className="ml-2 w-8 h-8 flex items-center justify-center rounded-xl border transition-all duration-200"
           style={
