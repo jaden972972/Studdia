@@ -100,23 +100,30 @@ const FAQS = [
 ];
 
 const PRO_FEATURES = [
-  "Todo lo del plan gratis",
-  "Liga semanal — sala de 30 reales",
-  "Timer ajustable (5–120 min)",
-  "Playlists personalizadas ilimitadas",
-  "Modo Neón Pro + badge exclusivo",
+  "Todo lo del plan Free",
+  "Acceso Exclusivo al Modo Hormozi (Dark Mode Pro)",
+  "Timer totalmente ajustable (1–180 min)",
+  "Playlists e IA de estudio ilimitadas",
+  "Liga de Leyendas con insignias exclusivas",
+  "Estadísticas detalladas de enfoque semanal",
   "Si eres #1 de tu liga → Pro gratis",
 ];
 
 const FREE_FEATURES = [
-  "Timer Pomodoro completo",
+  "Timer estándar (Pomodoro 25/5)",
   "Música sin anuncios (YouTube)",
   "4 playlists por materia",
-  "1 playlist personalizada",
+  "Liga de Bronce (30 estudiantes)",
   "Sincronización entre dispositivos",
 ];
 
-const FREE_MISSING = ["Liga semanal", "Timer ajustable (5–120 min)", "Playlists ilimitadas"];
+const FREE_MISSING = [
+  "Modo Hormozi — Dark Mode Pro",
+  "Timer ajustable (1–180 min)",
+  "Playlists e IA ilimitadas",
+  "Liga de Leyendas + insignias",
+  "Estadísticas semanales de enfoque",
+];
 
 /* ─────────────────────────────────────────────────────────────────────────── */
 /* COMPONENT                                                                    */
@@ -159,8 +166,8 @@ export default function Landing() {
     pricingProBg:  dark
       ? "radial-gradient(ellipse at top, rgba(139,92,246,0.14) 0%, rgba(8,8,11,0.97) 65%)"
       : "linear-gradient(160deg, rgba(209,0,209,0.06) 0%, #FFFFFF 40%)",
-    pricingProBorder: dark ? "rgba(139,92,246,0.4)"       : "rgba(209,0,209,0.3)",
-    pricingProShadow: dark ? "0 0 60px rgba(139,92,246,0.18)" : "0 8px 40px rgba(209,0,209,0.12)",
+    pricingProBorder: dark ? "rgba(139,92,246,0.5)"       : "#D100D1",
+    pricingProShadow: dark ? "0 0 60px rgba(139,92,246,0.22)" : "0 8px 48px rgba(209,0,209,0.18), 0 0 0 1px rgba(209,0,209,0.12)",
     ctaSectionBg:  dark
       ? "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.2) 0%, rgba(5,5,7,0.97) 65%)"
       : "linear-gradient(160deg, rgba(209,0,209,0.06) 0%, #FFFFFF 60%)",
@@ -757,10 +764,11 @@ export default function Landing() {
               {FREE_MISSING.map((f) => (
                 <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: t.missedColor }}>
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={t.missedColor}
-                    strokeWidth="2" className="shrink-0 mt-0.5">
-                    <path d="M18 6L6 18M6 6l12 12" />
+                    strokeWidth="1.8" className="shrink-0 mt-0.5">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
                   </svg>
-                  <span className="line-through">{f}</span>
+                  <span className="line-through decoration-1" style={{ textDecorationColor: t.missedColor }}>{f}</span>
                 </li>
               ))}
             </ul>
@@ -769,7 +777,7 @@ export default function Landing() {
               className="w-full py-3.5 rounded-2xl font-black text-sm transition-all uppercase tracking-[0.1em]"
               style={t.freeCTA}
             >
-              Empezar gratis
+              Empezar a estudiar gratis
             </button>
           </div>
 
@@ -786,7 +794,7 @@ export default function Landing() {
               className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-5 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest whitespace-nowrap text-white"
               style={{ background: t.proBadgeBg, boxShadow: dark ? "0 0 20px rgba(139,92,246,0.5)" : "0 4px 14px rgba(209,0,209,0.35)" }}
             >
-              ⚡ Solo {spotsLeft} plazas al precio de lanzamiento
+              ⚡ Solo {spotsLeft} plazas a este precio
             </div>
             <span
               className="text-[12px] font-black uppercase tracking-[0.2em] mb-4"
@@ -815,10 +823,10 @@ export default function Landing() {
               className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-[0.1em] transition-all active:scale-[0.98] text-white"
               style={{ background: t.btnPrimary, boxShadow: t.btnShadow }}
             >
-              Obtener mi ventaja injusta →
+              Garantizar mi plaza Pro →
             </button>
             <p className="text-center text-[10px] mt-3" style={{ color: t.textMuted }}>
-              El precio sube cuando se llenen las plazas
+              Sin permanencia · Cancela cuando quieras
             </p>
           </div>
         </div>
