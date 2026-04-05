@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/app/components/Navbar";
+import WaitlistModal from "@/app/components/WaitlistModal";
 import { useTheme } from "@/app/providers";
 
 /* ─────────────────────────────────────────────────────────────────────────── */
@@ -131,6 +132,23 @@ export default function Landing() {
   const { theme } = useTheme();
   const dark = theme === "dark";
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [showWaitlist, setShowWaitlist] = useState(false);
+
+  // ── Plazas counter with localStorage persistence ─────────────────────────
+  const [plazasRestantes, setPlazasRestantes] = useState<number>(20);
+  useEffect(() => {
+    const stored = localStorage.getItem("studdia_plazas");
+    if (stored !== null) {
+      setPlazasRestantes(Number(stored));
+    } else {
+      // Simulate real sales: random number between 3 and 17
+      const simulated = Math.floor(Math.random() * 15) + 3;
+      localStorage.setItem("studdia_plazas", String(simulated));
+      setPlazasRestantes(simulated);
+    }
+  }, []);
+
+  const hasSpotsLeft = plazasRestantes > 0;
   const spotsLeft = 13;
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -642,21 +660,41 @@ export default function Landing() {
               <span className="text-sm line-through font-black" style={{ color: t.textMuted }}>33+€/mes</span>
             </div>
             <div
-              className="flex items-center justify-between mb-7 pb-7"
+              className="flex items-center justify-between mb-4 pb-4"
               style={{ borderBottom: `1px solid ${t.tableRowBorder}` }}
             >
               <span className="font-black text-xl" style={{ color: t.textPrimary }}>Tu precio hoy:</span>
               <div className="flex items-end gap-1.5">
-                <span className="font-black text-5xl" style={{ color: t.accent }}>2,50€</span>
-                <span className="text-sm mb-2" style={{ color: t.textMuted }}>/mes</span>
+                {hasSpotsLeft ? (
+                  <>
+                    <span className="text-2xl line-through font-black" style={{ color: t.textMuted }}>4,99€</span>
+                    <span className="font-black text-5xl" style={{ color: t.accent }}>2,50€</span>
+                    <span className="text-sm mb-2" style={{ color: t.textMuted }}>/mes</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="font-black text-5xl" style={{ color: t.accent }}>4,99€</span>
+                    <span className="text-sm mb-2" style={{ color: t.textMuted }}>/mes</span>
+                  </>
+                )}
               </div>
             </div>
+            {/* Urgency counter */}
+            {hasSpotsLeft && (
+              <div
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl mb-5 font-black text-sm text-black"
+                style={{ background: "#FF00FF" }}
+              >
+                <span>⚡</span>
+                <span>¡CORRE! Solo quedan <strong>{plazasRestantes}</strong> plazas a este precio</span>
+              </div>
+            )}
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => setShowWaitlist(true)}
               className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-[0.12em] transition-all active:scale-[0.98] text-white"
               style={{ background: t.btnPrimary, boxShadow: t.btnShadow }}
             >
-              Asegurar mi plaza Pro — 2,50€/mes →
+              {hasSpotsLeft ? "Asegurar mi plaza Pro — 2,50€/mes →" : "COMPRAR PRO — 4,99€/mes →"}
             </button>
             <p className="text-center text-[11px] mt-3" style={{ color: t.textMuted }}>
               Sin permanencia · Sin tarjeta hasta que decidas · Cancela cuando quieras
@@ -805,16 +843,39 @@ export default function Landing() {
             >
               💎 SÉ UNA LEYENDA
             </div>
+            {hasSpotsLeft && (
+              <div
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider mb-4"
+                style={{ background: "#FF00FF", color: "#000" }}
+              >
+                ⚡ OFERTA LANZAMIENTO
+              </div>
+            )}
             <span
               className="text-[12px] font-black uppercase tracking-[0.2em] mb-4"
               style={{ color: t.accent }}
             >
               Pro — Ventaja Injusta
             </span>
-            <div className="flex items-end gap-1.5 mb-7">
-              <span className="text-6xl font-black" style={{ color: t.textPrimary }}>2,50€</span>
+            <div className="flex items-end gap-2 mb-2">
+              {hasSpotsLeft && (
+                <span className="text-2xl line-through font-bold" style={{ color: t.textMuted }}>4,99€</span>
+              )}
+              <span className="text-6xl font-black" style={{ color: t.textPrimary }}>
+                {hasSpotsLeft ? "2,50€" : "4,99€"}
+              </span>
               <span className="text-sm mb-1.5" style={{ color: t.textMuted }}>/ mes · sin permanencia</span>
             </div>
+            {/* Urgency counter */}
+            {hasSpotsLeft && (
+              <div
+                className="flex items-center gap-2 px-4 py-2.5 rounded-2xl mb-7 font-black text-sm text-black"
+                style={{ background: "#FF00FF" }}
+              >
+                <span>⚡</span>
+                <span>¡CORRE! Solo quedan <strong>{plazasRestantes}</strong> plazas a este precio</span>
+              </div>
+            )}
             <ul className="flex flex-col gap-3 mb-8 flex-1">
               {PRO_FEATURES.map((f) => (
                 <li key={f.text} className="flex items-start gap-2.5 text-sm" style={{ color: t.textPrimary }}>
@@ -832,11 +893,11 @@ export default function Landing() {
               ))}
             </ul>
             <button
-              onClick={() => router.push("/login")}
+              onClick={() => setShowWaitlist(true)}
               className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-[0.1em] transition-all active:scale-[0.98] text-white"
               style={{ background: t.btnPrimary, boxShadow: t.btnShadow }}
             >
-              Garantizar mi Estatus Pro →
+              {hasSpotsLeft ? "Garantizar mi Estatus Pro →" : "COMPRAR PRO — 4,99€/mes →"}
             </button>
             <p className="text-center text-[10px] mt-3" style={{ color: t.textMuted }}>
               Sin permanencia · Cancela cuando quieras
@@ -980,6 +1041,9 @@ export default function Landing() {
           </button>
         </div>
       </footer>
+
+      {/* ── WAITLIST MODAL ── */}
+      <WaitlistModal open={showWaitlist} onClose={() => setShowWaitlist(false)} />
     </div>
   );
 }

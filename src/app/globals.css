@@ -58,6 +58,15 @@ body {
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
+
+@keyframes btn-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255, 0, 255, 0.55); }
+  50%       { box-shadow: 0 0 0 12px rgba(255, 0, 255, 0); }
+}
+
+.btn-pulse {
+  animation: btn-pulse 1.8s ease-in-out infinite;
+}
 [data-theme="light"] .pro-badge-anim {
   -webkit-text-fill-color: #7c3aed;
   background: none;

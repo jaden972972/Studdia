@@ -2,18 +2,19 @@
 import { useState, useEffect, useCallback } from "react";
 
 const MODES = {
-  FOCUS: { label: "Focus", minutes: 25, color: "#8b5cf6" },
-  SHORT: { label: "Short Break", minutes: 5, color: "#10b981" },
-  LONG:  { label: "Long Break", minutes: 15, color: "#3b82f6" },
+  FOCUS: { label: "Enfoque",        minutes: 25, color: "#8b5cf6" },
+  SHORT: { label: "Descanso Corto", minutes: 5,  color: "#10b981" },
+  LONG:  { label: "Descanso Largo", minutes: 15, color: "#3b82f6" },
 } as const;
 
 type Mode = keyof typeof MODES;
 
 interface Props {
   onSessionComplete?: () => void;
+  onFocusToggle?: (active: boolean) => void;
 }
 
-export default function PomodoroEngine({ onSessionComplete }: Props) {
+export default function PomodoroEngine({ onSessionComplete, onFocusToggle }: Props) {
   const [mode, setMode] = useState<Mode>("FOCUS");
   const [seconds, setSeconds] = useState(MODES.FOCUS.minutes * 60);
   const [isActive, setIsActive] = useState(false);
@@ -74,6 +75,10 @@ export default function PomodoroEngine({ onSessionComplete }: Props) {
     return () => clearInterval(id);
   }, [isActive, seconds, mode, onSessionComplete, notify]);
 
+  useEffect(() => {
+    onFocusToggle?.(isActive);
+  }, [isActive, onFocusToggle]);
+
   const changeMode = (m: Mode) => { setMode(m); setSeconds(MODES[m].minutes * 60); setIsActive(false); };
   const reset = () => { setSeconds(MODES[mode].minutes * 60); setIsActive(false); };
   const pad = (n: number) => n.toString().padStart(2, "0");
@@ -117,10 +122,10 @@ export default function PomodoroEngine({ onSessionComplete }: Props) {
             {fmt(seconds)}
           </span>
           <span className="text-[9px] text-gray-500 uppercase tracking-widest mt-2">
-            {isActive ? "In Focus" : "Ready"}
+            {isActive ? "En Sesión" : "Listo"}
           </span>
           <span className="text-[10px] font-bold mt-1" style={{ color: accent }}>
-            {sessions} {sessions === 1 ? "session" : "sessions"}
+            {sessions} {sessions === 1 ? "sesión" : "sesiones"}
           </span>
         </div>
       </div>
@@ -139,14 +144,14 @@ export default function PomodoroEngine({ onSessionComplete }: Props) {
         </button>
         <button
           onClick={() => setIsActive((v) => !v)}
-          className="flex-1 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-200 active:scale-[0.97]"
+          className={`flex-1 py-3.5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] transition-all duration-200 active:scale-[0.97]${!isActive ? " btn-pulse" : ""}`}
           style={
             isActive
               ? { background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "white" }
-              : { background: accent, color: "white", boxShadow: `0 0 20px ${accent}50` }
+              : { background: accent, color: "white" }
           }
         >
-          {isActive ? "Pause" : "Start Focus"}
+          {isActive ? "Pausar" : "Iniciar"}
         </button>
       </div>
     </div>

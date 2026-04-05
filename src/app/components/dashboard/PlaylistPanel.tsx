@@ -31,11 +31,11 @@ export default function PlaylistPanel({ onPlay }: Props) {
 
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Playlists</p>
+      <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Tu Biblioteca</p>
 
       {playlists.length === 0 ? (
         <p className="text-[11px] text-gray-700 italic py-2">
-          No playlists found. Add tracks in the cockpit.
+          Sin listas aún. Añade pistas desde el cockpit.
         </p>
       ) : (
         <div className="flex flex-col gap-1">

@@ -13,19 +13,20 @@ export default function Dashboard() {
   const [mobileTab, setMobileTab] = useState<Tab>("timer");
   const [totalSessions, setTotalSessions] = useState(0);
   const [videoId, setVideoId] = useState<string | null>(null);
+  const [isFocusMode, setIsFocusMode] = useState(false);
 
   const NAV: { id: Tab; label: string; glyph: string }[] = [
-    { id: "timer",     label: "Focus",     glyph: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5-5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" },
-    { id: "tasks",     label: "Tasks",     glyph: "M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" },
-    { id: "ambience",  label: "Sound",     glyph: "M3 18v-6a9 9 0 0118 0v6M3 18a3 3 0 006 0v-1H3v1zM21 18a3 3 0 01-6 0v-1h6v1z" },
-    { id: "playlists", label: "Lists",     glyph: "M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" },
+    { id: "timer",     label: "Temporizador", glyph: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm.5-5H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" },
+    { id: "tasks",     label: "Tareas",       glyph: "M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" },
+    { id: "ambience",  label: "Sonidos",      glyph: "M3 18v-6a9 9 0 0118 0v6M3 18a3 3 0 006 0v-1H3v1zM21 18a3 3 0 01-6 0v-1h6v1z" },
+    { id: "playlists", label: "Listas",       glyph: "M9 19V6l12-3v13M9 19c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2zm12-3c0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2 2 .9 2 2z" },
   ];
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white font-sans flex flex-col">
 
       {/* ── TOPBAR ── */}
-      <header className="shrink-0 flex items-center justify-between px-5 md:px-8 py-4 border-b border-white/[0.06] bg-black/30 backdrop-blur-sm">
+      <header className={`shrink-0 flex items-center justify-between px-5 md:px-8 py-4 border-b border-white/[0.06] bg-black/30 backdrop-blur-sm transition-all duration-500${isFocusMode ? " blur-sm pointer-events-none select-none" : ""}`}>
         <div className="flex items-center gap-3">
           <div
             className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
@@ -37,13 +38,13 @@ export default function Dashboard() {
           </div>
           <div>
             <span className="font-black text-sm tracking-tight leading-none block">Studdia</span>
-            <span className="text-[9px] text-gray-600 leading-none">Deep Work Dashboard</span>
+            <span className="text-[9px] text-gray-600 leading-none">Panel de Trabajo Profundo</span>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
           <span className="hidden sm:block text-[10px] text-gray-600">
-            <span className="text-violet-400 font-bold">{totalSessions}</span> sessions today
+            <span className="text-violet-400 font-bold">{totalSessions}</span> sesiones hoy
           </span>
           {session?.user?.image && (
             <img src={session.user.image} alt="" className="w-7 h-7 rounded-full border border-white/10" />
@@ -66,7 +67,7 @@ export default function Dashboard() {
       <div className="flex flex-1 overflow-hidden">
 
         {/* ── DESKTOP SIDEBAR ── */}
-        <aside className="hidden lg:flex flex-col w-72 xl:w-80 shrink-0 border-r border-white/[0.06] bg-black/20 backdrop-blur-md overflow-y-auto">
+        <aside className={`hidden lg:flex flex-col w-72 xl:w-80 shrink-0 border-r border-white/[0.06] bg-black/20 backdrop-blur-md overflow-y-auto transition-all duration-500${isFocusMode ? " blur-sm pointer-events-none select-none" : ""}`}>
           <div className="p-6 flex flex-col gap-6">
             <AmbienceMixer />
             <div className="h-px bg-white/[0.05]" />
@@ -78,17 +79,41 @@ export default function Dashboard() {
         <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
 
           {/* Desktop: always show both cards */}
-          <div className="hidden lg:grid grid-cols-2 gap-4 h-full max-h-[calc(100vh-80px)]">
+          <div className="hidden lg:grid grid-cols-2 items-stretch gap-4 h-full max-h-[calc(100vh-80px)]">
 
             {/* Pomodoro card */}
             <div className="flex flex-col p-6 rounded-3xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-md">
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-6">Focus Timer</p>
-              <PomodoroEngine onSessionComplete={() => setTotalSessions((s) => s + 1)} />
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-6">Temporizador</p>
+              <PomodoroEngine
+                onSessionComplete={() => setTotalSessions((s) => s + 1)}
+                onFocusToggle={(active) => setIsFocusMode(active)}
+              />
             </div>
 
-            {/* Tasks card */}
+            {/* YouTube player card */}
             <div className="flex flex-col p-6 rounded-3xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-md overflow-hidden">
-              <TaskManager />
+              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-4">Reproductor</p>
+              {videoId ? (
+                <div className="flex-1 flex flex-col justify-center">
+                  <div className="w-full aspect-video rounded-2xl overflow-hidden">
+                    <iframe
+                      className="w-full h-full"
+                      src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowFullScreen
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center">
+                  <div className="w-12 h-12 rounded-2xl bg-white/[0.04] flex items-center justify-center">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#444" strokeWidth="1.5">
+                      <polygon points="5 3 19 12 5 21 5 3" />
+                    </svg>
+                  </div>
+                  <p className="text-[11px] text-gray-600">Selecciona una pista desde tu biblioteca</p>
+                </div>
+              )}
             </div>
           </div>
 
