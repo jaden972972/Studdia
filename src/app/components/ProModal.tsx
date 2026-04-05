@@ -9,13 +9,11 @@ interface ProModalProps {
   onClose: () => void;
 }
 
-const PRO_FEATURES: { icon: "bolt" | "diamond" | "shield"; text: string }[] = [
-  { icon: "bolt",    text: "Multiplicador XP x2 — Sube de liga el doble de rápido." },
-  { icon: "bolt",    text: "Modo Hormozi — Estética negra y magenta para enfoque extremo." },
-  { icon: "shield",  text: "Protección de Racha — 1 escudo por semana si olvidas estudiar." },
-  { icon: "bolt",    text: "Timer 100% Ajustable — De 1 a 180 minutos para Deep Work real." },
-  { icon: "diamond", text: "Estatus de Leyenda — Badge neón en todos los rankings." },
-  { icon: "bolt",    text: "Algoritmo de contenido — Los mejores vídeos, no los de YouTube." },
+const PRO_FEATURES: { icon: "bolt" | "diamond" | "shield"; emoji: string; text: string }[] = [
+  { icon: "bolt",    emoji: "⚡", text: "Multiplicador de XP (x2) para dominar la Liga" },
+  { icon: "bolt",    emoji: "🖤", text: "Modo oscuro Pro — Estética Dark para enfoque extremo" },
+  { icon: "bolt",    emoji: "⏳", text: "Timer 100% Ajustable — Deep Work sin límites" },
+  { icon: "shield",  emoji: "🛡️", text: "Protección de Racha Semanal" },
 ];
 
 export default function ProModal({ open, onClose }: ProModalProps) {
@@ -39,10 +37,6 @@ export default function ProModal({ open, onClose }: ProModalProps) {
   const textMuted     = isDark ? "#6b7280" : "#9ca3af";
   const featureRowBg  = isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)";
   const featureRowBorder = isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)";
-  const btnBg         = isDark ? "linear-gradient(135deg,#8b5cf6,#6d28d9)" : "#D100D1";
-  const btnShadow     = isDark
-    ? "0 0 32px rgba(139,92,246,0.4), 0 4px 16px rgba(0,0,0,0.4)"
-    : "0 4px 20px rgba(209,0,209,0.35), 0 2px 8px rgba(0,0,0,0.08)";
 
   useEffect(() => {
     const handler = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
@@ -109,15 +103,30 @@ export default function ProModal({ open, onClose }: ProModalProps) {
                   className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border"
                   style={{ background: accentLight, borderColor: accentBorder, color: accentText }}
                 >
-                  💎 Sé una Leyenda
+                  ⚡ Studdia PRO
                 </span>
               </div>
 
-              {/* Price */}
+              {/* Headline */}
               <div className="text-center">
+                <h2 className="text-xl font-black tracking-tight leading-tight mb-1" style={{ color: textPrimary }}>
+                  Sube de Nivel con
+                </h2>
+                <h2
+                  className="text-xl font-black tracking-tight leading-tight mb-2"
+                  style={{
+                    background: isDark
+                      ? "linear-gradient(135deg,#c4b5fd,#8b5cf6)"
+                      : "linear-gradient(135deg,#D100D1,#a000bb)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  Studdia PRO
+                </h2>
                 <div className="flex items-end justify-center gap-1.5 mb-1">
-                  <span className="text-5xl font-black" style={{ color: textPrimary }}>€2,50</span>
-                  <span className="text-sm mb-1.5" style={{ color: textMuted }}>/mes</span>
+                  <span className="text-4xl font-black" style={{ color: textPrimary }}>€2,50</span>
+                  <span className="text-sm mb-1" style={{ color: textMuted }}>/mes</span>
                 </div>
                 <p className="text-[11px]" style={{ color: textSecondary }}>
                   Sin permanencia · Cancela cuando quieras
@@ -132,37 +141,41 @@ export default function ProModal({ open, onClose }: ProModalProps) {
                     className="flex items-center gap-3 px-3 py-2.5 rounded-2xl"
                     style={{ background: featureRowBg, border: `1px solid ${featureRowBorder}` }}
                   >
-                    <div
-                      className="w-6 h-6 rounded-lg shrink-0 flex items-center justify-center"
-                      style={{ background: accentLight }}
-                    >
-                      <svg width="11" height="11" viewBox="0 0 24 24" fill={accentText} stroke="none">
-                        {f.icon === "bolt"    && <path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z" />}
-                        {f.icon === "diamond" && <polygon points="12,2 22,12 12,22 2,12" />}
-                        {f.icon === "shield"  && <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />}
-                      </svg>
-                    </div>
-                    <span className="text-[12px] font-medium leading-snug" style={{ color: textPrimary }}>{f.text}</span>
+                    <span className="text-base shrink-0 leading-none">{f.emoji}</span>
+                    <span className="text-[12px] font-semibold leading-snug" style={{ color: textPrimary }}>{f.text}</span>
                   </li>
                 ))}
               </ul>
 
               {/* CTA */}
               <motion.button
-                whileHover={{ scale: 1.02 }}
+                whileHover={{ scale: 1.03, boxShadow: isDark ? "0 0 48px rgba(139,92,246,0.7), 0 6px 24px rgba(0,0,0,0.5)" : "0 0 40px rgba(209,0,209,0.6), 0 6px 20px rgba(209,0,209,0.3)" }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => { onClose(); router.push("/login"); }}
-                className="w-full py-4 rounded-2xl font-black text-sm uppercase tracking-[0.12em] text-white relative overflow-hidden"
-                style={{ background: btnBg, boxShadow: btnShadow }}
+                className="w-full py-4 rounded-2xl font-black text-[13px] uppercase tracking-[0.18em] text-white relative overflow-hidden"
+                style={{
+                  background: isDark
+                    ? "linear-gradient(135deg,#a855f7,#8b5cf6,#6d28d9)"
+                    : "linear-gradient(135deg,#e600e6,#D100D1,#a000bb)",
+                  boxShadow: isDark
+                    ? "0 0 36px rgba(139,92,246,0.55), 0 4px 16px rgba(0,0,0,0.4)"
+                    : "0 0 36px rgba(209,0,209,0.5), 0 4px 16px rgba(209,0,209,0.25)",
+                }}
               >
                 <motion.span
                   className="absolute inset-0 pointer-events-none"
-                  style={{ background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%)" }}
+                  style={{ background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.15) 50%, transparent 65%)" }}
                   animate={{ x: ["-100%", "200%"] }}
-                  transition={{ repeat: Infinity, duration: 2.5, ease: "linear" }}
+                  transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
                 />
-                Garantizar mi Estatus Pro →
+                CONSEGUIR VENTAJA PRO →
               </motion.button>
+
+              {/* Stripe notice */}
+              <p className="text-center text-[10px] leading-relaxed" style={{ color: textMuted }}>
+                Integración de pagos en proceso.<br />
+                Consigue acceso anticipado hoy.
+              </p>
             </div>
           </motion.div>
         </>
